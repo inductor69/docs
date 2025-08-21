@@ -1,0 +1,267 @@
+---
+title: "Monitor Data Usage"
+api: "GET http://localhost:8000/api/v1/data-usage/{api_key}"
+description: "Monitor your current data usage and limits"
+---
+
+Monitor your current data usage and limits for your API key. This endpoint provides detailed information about your monthly data consumption, billing period, and account status.
+
+### Path Parameters
+
+<ParamField path="api_key" type="string" required>
+  Your QuantCite API key for which to retrieve usage information.
+</ParamField>
+
+### Response
+
+<ResponseField name="user_id" type="string">
+  Unique identifier for your user account.
+</ResponseField>
+
+<ResponseField name="username" type="string">
+  Your account username.
+</ResponseField>
+
+<ResponseField name="billing_tier" type="string">
+  Your current subscription tier (basic, premium, developer, enterprise).
+</ResponseField>
+
+<ResponseField name="api_key_active" type="boolean">
+  Whether your API key is currently active and valid.
+</ResponseField>
+
+<ResponseField name="data_usage" type="object">
+  Detailed data usage information for the current billing period.
+  
+  <Expandable title="data_usage object">
+    <ResponseField name="used_gb" type="number">
+      Amount of data consumed in gigabytes for the current billing period.
+    </ResponseField>
+    
+    <ResponseField name="limit_gb" type="number">
+      Monthly data limit in gigabytes (50GB for all tiers).
+    </ResponseField>
+    
+    <ResponseField name="remaining_gb" type="number">
+      Remaining data allowance in gigabytes.
+    </ResponseField>
+    
+    <ResponseField name="usage_percentage" type="number">
+      Percentage of monthly data limit consumed.
+    </ResponseField>
+    
+    <ResponseField name="bytes_used" type="number">
+      Exact bytes consumed in the current billing period.
+    </ResponseField>
+    
+    <ResponseField name="bytes_limit" type="number">
+      Monthly data limit in bytes.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="billing_period" type="object">
+  Information about the current billing cycle.
+  
+  <Expandable title="billing_period object">
+    <ResponseField name="reset_date" type="string">
+      ISO 8601 timestamp when the current billing period will reset.
+    </ResponseField>
+    
+    <ResponseField name="days_until_reset" type="number">
+      Number of days remaining until the billing period resets.
+    </ResponseField>
+    
+    <ResponseField name="next_reset" type="string">
+      ISO 8601 timestamp of the next billing period reset after the current one.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="status" type="object">
+  Current account and usage status indicators.
+  
+  <Expandable title="status object">
+    <ResponseField name="limit_exceeded" type="boolean">
+      Whether the monthly data limit has been exceeded.
+    </ResponseField>
+    
+    <ResponseField name="warning_threshold" type="boolean">
+      Whether usage is approaching the warning threshold (typically 80% of limit).
+    </ResponseField>
+    
+    <ResponseField name="api_key_status" type="string">
+      Current status of the API key (active, suspended, expired).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when the usage data was retrieved.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl "http://localhost:8000/api/v1/data-usage/demo_key_123"
+```
+
+```javascript JavaScript
+const apiKey = 'demo_key_123';
+const response = await fetch(`http://localhost:8000/api/v1/data-usage/${apiKey}`);
+const usageData = await response.json();
+
+console.log(`Usage: ${usageData.data_usage.used_gb}GB / ${usageData.data_usage.limit_gb}GB`);
+console.log(`Remaining: ${usageData.data_usage.remaining_gb}GB`);
+```
+
+```python Python
+import requests
+
+api_key = "demo_key_123"
+response = requests.get(f"http://localhost:8000/api/v1/data-usage/{api_key}")
+usage_data = response.json()
+
+print(f"Tier: {usage_data['billing_tier']}")
+print(f"Usage: {usage_data['data_usage']['used_gb']}GB / {usage_data['data_usage']['limit_gb']}GB")
+print(f"Days until reset: {usage_data['billing_period']['days_until_reset']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response
+{
+  "user_id": "cb88461f-421a-4ac8-9722-afe248a40ae6",
+  "username": "trader123",
+  "billing_tier": "premium",
+  "api_key_active": true,
+  "data_usage": {
+    "used_gb": 12.5,
+    "limit_gb": 50.0,
+    "remaining_gb": 37.5,
+    "usage_percentage": 25.0,
+    "bytes_used": 13421772800,
+    "bytes_limit": 53687091200
+  },
+  "billing_period": {
+    "reset_date": "2025-01-15T00:00:00Z",
+    "days_until_reset": 15,
+    "next_reset": "2025-02-15T00:00:00Z"
+  },
+  "status": {
+    "limit_exceeded": false,
+    "warning_threshold": false,
+    "api_key_status": "active"
+  },
+  "timestamp": "2025-01-30T10:30:00Z"
+}
+```
+
+```json Error Response
+{
+  "error": "api_key_not_found",
+  "message": "The provided API key was not found",
+  "timestamp": "2025-01-30T10:30:00Z"
+}
+```
+
+</ResponseExample>
+
+## Usage Monitoring Best Practices
+
+### Automated Monitoring
+```python
+import requests
+import time
+
+def monitor_usage(api_key, threshold=40.0):
+    """Monitor data usage and alert when threshold is reached"""
+    response = requests.get(f"http://localhost:8000/api/v1/data-usage/{api_key}")
+    
+    if response.status_code == 200:
+        data = response.json()
+        used_gb = data['data_usage']['used_gb']
+        limit_gb = data['data_usage']['limit_gb']
+        
+        if used_gb >= threshold:
+            print(f"WARNING: High usage detected: {used_gb}GB / {limit_gb}GB")
+            return True
+    
+    return False
+
+# Check usage every hour
+while True:
+    monitor_usage("your_api_key")
+    time.sleep(3600)  # 1 hour
+```
+
+### Usage Dashboard
+```javascript
+async function createUsageDashboard(apiKey) {
+    const response = await fetch(`http://localhost:8000/api/v1/data-usage/${apiKey}`);
+    const data = await response.json();
+    
+    const usage = data.data_usage;
+    const billing = data.billing_period;
+    
+    console.log(`
+    ╔══════════════════════════════════════╗
+    ║           QUANTCITE USAGE            ║
+    ╠══════════════════════════════════════╣
+    ║ Tier: ${data.billing_tier.toUpperCase().padEnd(28)} ║
+    ║ Used: ${usage.used_gb}GB / ${usage.limit_gb}GB${' '.repeat(20 - `${usage.used_gb}GB / ${usage.limit_gb}GB`.length)}║
+    ║ Remaining: ${usage.remaining_gb}GB${' '.repeat(23 - `${usage.remaining_gb}GB`.length)}║
+    ║ Usage: ${usage.usage_percentage.toFixed(1)}%${' '.repeat(25 - `${usage.usage_percentage.toFixed(1)}%`.length)}║
+    ║ Reset in: ${billing.days_until_reset} days${' '.repeat(20 - `${billing.days_until_reset} days`.length)}║
+    ╚══════════════════════════════════════╝
+    `);
+}
+```
+
+## Error Responses
+
+### Invalid API Key
+**Status Code:** `404 Not Found`
+```json
+{
+  "error": "api_key_not_found",
+  "message": "The provided API key was not found",
+  "timestamp": "2025-01-30T10:30:00Z"
+}
+```
+
+### Suspended Account
+**Status Code:** `401 Unauthorized`
+```json
+{
+  "error": "account_suspended",
+  "message": "Your account has been suspended. Contact support.",
+  "timestamp": "2025-01-30T10:30:00Z"
+}
+```
+
+## Integration Tips
+
+<CardGroup cols={2}>
+  <Card title="Regular Monitoring" icon="chart-line">
+    Check usage regularly to avoid hitting the 50GB monthly limit. Set up automated alerts at 80% usage.
+  </Card>
+  
+  <Card title="Usage Optimization" icon="gauge-high">
+    Monitor usage patterns to optimize your WebSocket subscriptions and reduce data consumption.
+  </Card>
+  
+  <Card title="Billing Awareness" icon="calendar">
+    Track billing periods and plan your data usage accordingly. Usage resets monthly.
+  </Card>
+  
+  <Card title="Error Handling" icon="shield">
+    Implement proper error handling for invalid API keys and suspended accounts.
+  </Card>
+</CardGroup>
+
+<Note>
+  This endpoint does not require admin authentication and can be called by providing your API key as a path parameter. It does not count against your rate limits or data usage.
+</Note>

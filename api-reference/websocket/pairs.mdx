@@ -1,0 +1,587 @@
+---
+title: "Trading Pairs"
+description: "Get information about available trading pairs across all exchanges"
+---
+
+Retrieve comprehensive information about available trading pairs across all supported exchanges or for specific exchanges.
+
+## Get All Trading Pairs
+
+Request trading pairs information for all exchanges.
+
+### Request
+
+```json
+{
+  "type": "get_pairs"
+}
+```
+
+**Parameters:**
+- `type` (string, required): Must be "get_pairs"
+
+### Response
+
+```json
+{
+  "type": "pairs_data",
+  "data": {
+    "exchanges": {
+      "binance": ["BTC/USDT", "ETH/USDT", "BNB/USDT", "ADA/USDT"],
+      "bybit": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "DOGE/USDT"],
+      "kucoin": ["BTC/USDT", "ETH/USDT", "KCS/USDT", "DOT/USDT"]
+    },
+    "total_exchanges": 35,
+    "total_pairs": 40747,
+    "common_pairs": ["BTC/USDT", "ETH/USDT", "BNB/USDT", "ADA/USDT"]
+  },
+  "timestamp": "2025-08-19T20:45:13.392607"
+}
+```
+
+## Get Exchange-Specific Pairs
+
+Request trading pairs for a specific exchange.
+
+### Request
+
+```json
+{
+  "type": "get_pairs",
+  "exchange": "binance"
+}
+```
+
+**Parameters:**
+- `type` (string, required): Must be "get_pairs"
+- `exchange` (string, required): Name of the specific exchange
+
+### Response
+
+```json
+{
+  "type": "pairs_data",
+  "data": {
+    "exchange": "binance",
+    "pairs": [
+      "BTC/USDT", "ETH/USDT", "BNB/USDT", "ADA/USDT", 
+      "SOL/USDT", "DOGE/USDT", "XRP/USDT", "DOT/USDT"
+    ],
+    "total_pairs": 3826,
+    "categories": {
+      "major": ["BTC/USDT", "ETH/USDT", "BNB/USDT"],
+      "altcoins": ["ADA/USDT", "SOL/USDT", "DOT/USDT"],
+      "meme": ["DOGE/USDT", "SHIB/USDT"]
+    }
+  },
+  "timestamp": "2025-08-19T20:45:13.392607"
+}
+```
+
+## Response Fields
+
+### All Exchanges Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exchanges` | object | Map of exchange names to their trading pairs |
+| `total_exchanges` | number | Number of exchanges included |
+| `total_pairs` | number | Total unique trading pairs across all exchanges |
+| `common_pairs` | array | Trading pairs available on multiple exchanges |
+
+### Single Exchange Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exchange` | string | Name of the requested exchange |
+| `pairs` | array | List of all trading pairs on this exchange |
+| `total_pairs` | number | Number of pairs on this exchange |
+| `categories` | object | Pairs grouped by category (major, altcoins, meme, etc.) |
+
+## Trading Pair Categories
+
+### Major Pairs (Highest Liquidity)
+
+<CardGroup cols={2}>
+  <Card title="BTC Pairs" icon="bitcoin">
+    **BTC/USDT** - Most liquid pair globally  
+    **BTC/USD** - Fiat trading  
+    **BTC/EUR** - European markets
+  </Card>
+  
+  <Card title="ETH Pairs" icon="ethereum">
+    **ETH/USDT** - Second most liquid  
+    **ETH/BTC** - Crypto-to-crypto  
+    **ETH/USD** - Direct fiat trading
+  </Card>
+  
+  <Card title="Stablecoin Pairs" icon="dollar-sign">
+    **USDT/USD** - Tether to USD  
+    **USDC/USDT** - Stablecoin arbitrage  
+    **DAI/USDT** - DeFi stablecoins
+  </Card>
+  
+  <Card title="Exchange Tokens" icon="building-columns">
+    **BNB/USDT** - Binance Coin  
+    **OKB/USDT** - OKX Token  
+    **KCS/USDT** - KuCoin Shares
+  </Card>
+</CardGroup>
+
+### Altcoin Categories
+
+**Layer 1 Blockchains:**
+- SOL/USDT (Solana)
+- ADA/USDT (Cardano)
+- AVAX/USDT (Avalanche)
+- DOT/USDT (Polkadot)
+- ATOM/USDT (Cosmos)
+
+**DeFi Tokens:**
+- UNI/USDT (Uniswap)
+- AAVE/USDT (Aave)
+- COMP/USDT (Compound)
+- SUSHI/USDT (SushiSwap)
+
+**Meme Coins:**
+- DOGE/USDT (Dogecoin)
+- SHIB/USDT (Shiba Inu)
+- PEPE/USDT (Pepe)
+
+### Quote Currencies
+
+**Stablecoins (Most Common):**
+- USDT - Tether (most liquid)
+- USDC - USD Coin
+- BUSD - Binance USD
+- DAI - MakerDAO
+
+**Fiat Currencies:**
+- USD - US Dollar
+- EUR - Euro
+- GBP - British Pound
+- JPY - Japanese Yen
+
+**Crypto Quote Currencies:**
+- BTC - Bitcoin pairs
+- ETH - Ethereum pairs
+
+## Code Examples
+
+### Python Pairs Manager
+
+```python
+import json
+import asyncio
+from collections import defaultdict
+
+class TradingPairsManager:
+    def __init__(self):
+        self.all_pairs = {}
+        self.exchange_pairs = {}
+        self.common_pairs = []
+        self.pair_categories = defaultdict(list)
+    
+    async def get_all_pairs(self, websocket):
+        """Request all trading pairs"""
+        request = {"type": "get_pairs"}
+        await websocket.send(json.dumps(request))
+    
+    async def get_exchange_pairs(self, websocket, exchange):
+        """Request pairs for specific exchange"""
+        request = {
+            "type": "get_pairs",
+            "exchange": exchange
+        }
+        await websocket.send(json.dumps(request))
+    
+    def handle_pairs_data(self, data):
+        """Process trading pairs response"""
+        pairs_data = data.get('data', {})
+        
+        if 'exchange' in pairs_data:
+            # Single exchange response
+            self.handle_single_exchange_pairs(pairs_data)
+        else:
+            # All exchanges response
+            self.handle_all_exchanges_pairs(pairs_data)
+    
+    def handle_all_exchanges_pairs(self, data):
+        """Handle response with all exchanges"""
+        self.all_pairs = data.get('exchanges', {})
+        self.common_pairs = data.get('common_pairs', [])
+        
+        total_exchanges = data.get('total_exchanges', 0)
+        total_pairs = data.get('total_pairs', 0)
+        
+        print(f"Loaded {total_pairs} pairs across {total_exchanges} exchanges")
+        print(f"Common pairs: {len(self.common_pairs)}")
+        
+        # Analyze pair distribution
+        self.analyze_pair_distribution()
+    
+    def handle_single_exchange_pairs(self, data):
+        """Handle response for single exchange"""
+        exchange = data.get('exchange')
+        pairs = data.get('pairs', [])
+        categories = data.get('categories', {})
+        
+        self.exchange_pairs[exchange] = {
+            'pairs': pairs,
+            'categories': categories,
+            'total': len(pairs)
+        }
+        
+        print(f"{exchange}: {len(pairs)} trading pairs")
+        
+        # Print categories if available
+        for category, category_pairs in categories.items():
+            print(f"  {category}: {len(category_pairs)} pairs")
+    
+    def analyze_pair_distribution(self):
+        """Analyze how pairs are distributed across exchanges"""
+        pair_count = defaultdict(int)
+        
+        # Count how many exchanges have each pair
+        for exchange, pairs in self.all_pairs.items():
+            for pair in pairs:
+                pair_count[pair] += 1
+        
+        # Categorize by availability
+        universal_pairs = [pair for pair, count in pair_count.items() if count >= 10]
+        common_pairs = [pair for pair, count in pair_count.items() if 5 <= count < 10]
+        rare_pairs = [pair for pair, count in pair_count.items() if count < 5]
+        
+        print(f"\nPair Distribution Analysis:")
+        print(f"  Universal (10+ exchanges): {len(universal_pairs)}")
+        print(f"  Common (5-9 exchanges): {len(common_pairs)}")
+        print(f"  Rare (<5 exchanges): {len(rare_pairs)}")
+        
+        return {
+            'universal': universal_pairs,
+            'common': common_pairs,
+            'rare': rare_pairs
+        }
+    
+    def find_pairs_by_base(self, base_currency):
+        """Find all pairs with specific base currency"""
+        matching_pairs = []
+        
+        for exchange, pairs in self.all_pairs.items():
+            for pair in pairs:
+                if pair.startswith(f"{base_currency}/"):
+                    matching_pairs.append({
+                        'pair': pair,
+                        'exchange': exchange
+                    })
+        
+        return matching_pairs
+    
+    def find_pairs_by_quote(self, quote_currency):
+        """Find all pairs with specific quote currency"""
+        matching_pairs = []
+        
+        for exchange, pairs in self.all_pairs.items():
+            for pair in pairs:
+                if pair.endswith(f"/{quote_currency}"):
+                    matching_pairs.append({
+                        'pair': pair,
+                        'exchange': exchange
+                    })
+        
+        return matching_pairs
+    
+    def get_best_exchanges_for_pair(self, target_pair):
+        """Find which exchanges support a specific pair"""
+        exchanges = []
+        
+        for exchange, pairs in self.all_pairs.items():
+            if target_pair in pairs:
+                exchanges.append(exchange)
+        
+        return exchanges
+    
+    def suggest_pairs_for_trading(self, min_exchanges=5):
+        """Suggest pairs available on multiple exchanges"""
+        pair_count = defaultdict(int)
+        
+        for exchange, pairs in self.all_pairs.items():
+            for pair in pairs:
+                pair_count[pair] += 1
+        
+        suggested = [
+            pair for pair, count in pair_count.items() 
+            if count >= min_exchanges
+        ]
+        
+        # Sort by availability (most exchanges first)
+        suggested.sort(key=lambda p: pair_count[p], reverse=True)
+        
+        return suggested[:20]  # Top 20 suggestions
+
+# Usage
+manager = TradingPairsManager()
+
+# In your WebSocket message handler:
+if message.get('type') == 'pairs_data':
+    manager.handle_pairs_data(message)
+    
+    # Find BTC pairs
+    btc_pairs = manager.find_pairs_by_base('BTC')
+    print(f"Found {len(btc_pairs)} BTC pairs")
+    
+    # Get suggestions for trading
+    suggestions = manager.suggest_pairs_for_trading(min_exchanges=8)
+    print(f"Suggested pairs: {suggestions[:5]}")
+```
+
+### JavaScript Pairs Analyzer
+
+```javascript
+class TradingPairsAnalyzer {
+    constructor() {
+        this.allPairs = new Map();
+        this.exchangePairs = new Map();
+        this.pairStats = new Map();
+        this.lastUpdate = null;
+    }
+    
+    requestAllPairs(websocket) {
+        const request = { type: 'get_pairs' };
+        websocket.send(JSON.stringify(request));
+    }
+    
+    requestExchangePairs(websocket, exchange) {
+        const request = { 
+            type: 'get_pairs',
+            exchange: exchange
+        };
+        websocket.send(JSON.stringify(request));
+    }
+    
+    handlePairsData(data) {
+        const pairsData = data.data || {};
+        
+        if (pairsData.exchange) {
+            this.handleSingleExchange(pairsData);
+        } else {
+            this.handleAllExchanges(pairsData);
+        }
+        
+        this.lastUpdate = new Date();
+    }
+    
+    handleAllExchanges(data) {
+        this.allPairs = new Map(Object.entries(data.exchanges || {}));
+        
+        // Calculate pair statistics
+        this.calculatePairStats();
+        
+        console.log(`Loaded pairs from ${this.allPairs.size} exchanges`);
+        console.log(`Total unique pairs: ${data.total_pairs}`);
+        console.log(`Common pairs: ${data.common_pairs?.length || 0}`);
+    }
+    
+    handleSingleExchange(data) {
+        const exchange = data.exchange;
+        const pairs = data.pairs || [];
+        const categories = data.categories || {};
+        
+        this.exchangePairs.set(exchange, {
+            pairs: pairs,
+            categories: categories,
+            total: pairs.length
+        });
+        
+        console.log(`${exchange}: ${pairs.length} pairs`);
+    }
+    
+    calculatePairStats() {
+        const pairCount = new Map();
+        
+        // Count occurrences of each pair
+        for (const [exchange, pairs] of this.allPairs) {
+            pairs.forEach(pair => {
+                pairCount.set(pair, (pairCount.get(pair) || 0) + 1);
+            });
+        }
+        
+        this.pairStats = pairCount;
+    }
+    
+    findPairsByBase(baseCurrency) {
+        const matches = [];
+        
+        for (const [exchange, pairs] of this.allPairs) {
+            pairs.forEach(pair => {
+                if (pair.startsWith(`${baseCurrency}/`)) {
+                    matches.push({ pair, exchange });
+                }
+            });
+        }
+        
+        return matches;
+    }
+    
+    findPairsByQuote(quoteCurrency) {
+        const matches = [];
+        
+        for (const [exchange, pairs] of this.allPairs) {
+            pairs.forEach(pair => {
+                if (pair.endsWith(`/${quoteCurrency}`)) {
+                    matches.push({ pair, exchange });
+                }
+            });
+        }
+        
+        return matches;
+    }
+    
+    getExchangesForPair(targetPair) {
+        const exchanges = [];
+        
+        for (const [exchange, pairs] of this.allPairs) {
+            if (pairs.includes(targetPair)) {
+                exchanges.push(exchange);
+            }
+        }
+        
+        return exchanges;
+    }
+    
+    getMostLiquidPairs(minExchanges = 10) {
+        const liquidPairs = [];
+        
+        for (const [pair, count] of this.pairStats) {
+            if (count >= minExchanges) {
+                liquidPairs.push({ pair, exchanges: count });
+            }
+        }
+        
+        // Sort by exchange count (liquidity indicator)
+        liquidPairs.sort((a, b) => b.exchanges - a.exchanges);
+        
+        return liquidPairs;
+    }
+    
+    analyzePairCategories() {
+        const categories = {
+            major: [],
+            altcoins: [],
+            stablecoins: [],
+            meme: [],
+            defi: []
+        };
+        
+        const majorBases = ['BTC', 'ETH', 'BNB'];
+        const stablecoins = ['USDT', 'USDC', 'BUSD', 'DAI'];
+        const memeTokens = ['DOGE', 'SHIB', 'PEPE'];
+        const defiTokens = ['UNI', 'AAVE', 'COMP', 'SUSHI'];
+        
+        for (const pair of this.pairStats.keys()) {
+            const [base, quote] = pair.split('/');
+            
+            if (majorBases.includes(base)) {
+                categories.major.push(pair);
+            } else if (stablecoins.includes(base)) {
+                categories.stablecoins.push(pair);
+            } else if (memeTokens.includes(base)) {
+                categories.meme.push(pair);
+            } else if (defiTokens.includes(base)) {
+                categories.defi.push(pair);
+            } else {
+                categories.altcoins.push(pair);
+            }
+        }
+        
+        return categories;
+    }
+    
+    generateTradingRecommendations() {
+        const liquid = this.getMostLiquidPairs(8);
+        const categories = this.analyzePairCategories();
+        
+        return {
+            most_liquid: liquid.slice(0, 10),
+            major_pairs: categories.major.slice(0, 5),
+            top_altcoins: categories.altcoins.slice(0, 10),
+            defi_tokens: categories.defi.slice(0, 5)
+        };
+    }
+}
+
+// Usage
+const analyzer = new TradingPairsAnalyzer();
+
+// In your WebSocket message handler:
+if (message.type === 'pairs_data') {
+    analyzer.handlePairsData(message);
+    
+    // Get recommendations
+    const recommendations = analyzer.generateTradingRecommendations();
+    console.log('Trading recommendations:', recommendations);
+    
+    // Find all BTC pairs
+    const btcPairs = analyzer.findPairsByBase('BTC');
+    console.log(`BTC pairs found: ${btcPairs.length}`);
+}
+```
+
+## Pair Selection Strategies
+
+### Liquidity-Based Selection
+
+```python
+def select_high_liquidity_pairs(manager, min_exchanges=8):
+    """Select pairs with high liquidity (available on many exchanges)"""
+    suggestions = manager.suggest_pairs_for_trading(min_exchanges)
+    
+    # Prioritize major pairs
+    major_pairs = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT']
+    priority_pairs = [pair for pair in suggestions if pair in major_pairs]
+    other_pairs = [pair for pair in suggestions if pair not in major_pairs]
+    
+    return priority_pairs + other_pairs[:10]
+```
+
+### Category-Based Selection
+
+```javascript
+function selectPairsByCategory(analyzer) {
+    const categories = analyzer.analyzePairCategories();
+    
+    return {
+        conservative: categories.major.slice(0, 3),  // Top 3 major pairs
+        growth: categories.altcoins.slice(0, 5),     // Top 5 altcoins
+        speculative: categories.meme.slice(0, 2),    // Top 2 meme coins
+        defi: categories.defi.slice(0, 3)            // Top 3 DeFi tokens
+    };
+}
+```
+
+## Error Responses
+
+### Invalid Exchange
+
+```json
+{
+  "type": "error",
+  "error": "invalid_exchange",
+  "message": "Exchange 'invalid_name' is not supported",
+  "supported_exchanges": ["binance", "okx", "bybit", "kucoin"]
+}
+```
+
+### Authentication Required
+
+```json
+{
+  "type": "error",
+  "error": "authentication_required",
+  "message": "You must authenticate before requesting trading pairs"
+}
+```
+
+<Note>
+  Trading pairs availability can change over time as exchanges add or remove pairs. Regularly refresh your pairs data to ensure accurate information.
+</Note>

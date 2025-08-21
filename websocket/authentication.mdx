@@ -1,0 +1,197 @@
+---
+title: "WebSocket Authentication"
+description: "Authenticate your WebSocket connection and manage session state"
+---
+
+## Authentication Flow
+
+Authentication happens in two steps: connection-level authentication via query parameter and session-level authentication via WebSocket message.
+
+### Connection Authentication
+
+Your API key is included in the WebSocket URL:
+```
+ws://localhost:8000/api/v1/ws?api_key=demo_key_123
+```
+
+### Session Authentication
+
+After connecting, send an authentication message to establish your session:
+
+**Request:**
+```json
+{
+  "type": "authenticate",
+  "api_key": "demo_key_123"
+}
+```
+
+**Success Response:**
+```json
+{
+  "type": "authentication_success",
+  "user_id": "cb88461f-421a-4ac8-9722-afe248a40ae6",
+  "tier": "premium",
+  "message": "Authentication successful",
+  "data_usage": {
+    "used_gb": 12.5,
+    "limit_gb": 50.0,
+    "remaining_gb": 37.5,
+    "usage_percentage": 25.0
+  },
+  "rate_limits": {
+    "requests_per_minute": 1200,
+    "monthly_message_limit": 100000,
+    "max_connections": 20
+  }
+}
+```
+
+## Authentication Errors
+
+### Invalid API Key
+```json
+{
+  "type": "authentication_error",
+  "error": "invalid_api_key",
+  "message": "The provided API key is invalid or expired"
+}
+```
+
+### API Key Not Found
+```json
+{
+  "type": "authentication_error",
+  "error": "api_key_not_found", 
+  "message": "The provided API key was not found"
+}
+```
+
+### Account Suspended
+```json
+{
+  "type": "authentication_error",
+  "error": "account_suspended",
+  "message": "Your account has been suspended. Contact support."
+}
+```
+
+## User Tiers
+
+Different tiers provide different access levels:
+
+| Tier | Rate Limit | Monthly Messages | Max Connections | Data Limit |
+|------|------------|------------------|-----------------|------------|
+| Basic | 600 req/min | 10,000 | 5 | 50GB |
+| Premium | 1,200 req/min | 100,000 | 20 | 50GB |
+| Developer | 1,000 req/min | 50,000 | 15 | 50GB |
+| Enterprise | 10,000 req/min | 1,000,000 | 100 | 50GB |
+
+## Session Management
+
+### Session State
+
+After authentication, your session maintains:
+- **User ID** - Unique identifier for your account
+- **Tier Information** - Your current subscription tier
+- **Usage Statistics** - Real-time data consumption tracking
+- **Active Subscriptions** - Currently subscribed trading pairs
+- **Connection Metadata** - Connection time, IP, etc.
+
+### Session Persistence
+
+Sessions are maintained as long as:
+- WebSocket connection remains active
+- API key remains valid
+- Account remains in good standing
+- Data limits are not exceeded
+
+### Multiple Connections
+
+You can maintain multiple WebSocket connections up to your tier limit:
+- Each connection requires separate authentication
+- Data usage is shared across all connections
+- Rate limits apply per API key, not per connection
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="API Key Security" icon="key">
+    - Never expose API keys in client-side code
+    - Use environment variables for key storage
+    - Rotate keys regularly
+    - Monitor for unauthorized usage
+  </Card>
+  
+  <Card title="Connection Security" icon="shield">
+    - Use secure WebSocket connections (WSS) in production
+    - Implement proper error handling
+    - Log authentication events
+    - Monitor for suspicious activity
+  </Card>
+</CardGroup>
+
+## Code Examples
+
+### Python Authentication
+```python
+import asyncio
+import websockets
+import json
+
+async def authenticate():
+    uri = "ws://localhost:8000/api/v1/ws?api_key=demo_key_123"
+    
+    async with websockets.connect(uri) as websocket:
+        # Send authentication message
+        auth_msg = {
+            "type": "authenticate",
+            "api_key": "demo_key_123"
+        }
+        await websocket.send(json.dumps(auth_msg))
+        
+        # Wait for authentication response
+        response = await websocket.recv()
+        auth_data = json.loads(response)
+        
+        if auth_data.get("type") == "authentication_success":
+            print(f"Authenticated as user: {auth_data['user_id']}")
+            print(f"Tier: {auth_data['tier']}")
+            print(f"Data usage: {auth_data['data_usage']['used_gb']}GB / {auth_data['data_usage']['limit_gb']}GB")
+        else:
+            print(f"Authentication failed: {auth_data['message']}")
+
+asyncio.run(authenticate())
+```
+
+### JavaScript Authentication
+```javascript
+const WebSocket = require('ws');
+
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws?api_key=demo_key_123');
+
+ws.on('open', () => {
+    // Send authentication message
+    const authMsg = {
+        type: 'authenticate',
+        api_key: 'demo_key_123'
+    };
+    ws.send(JSON.stringify(authMsg));
+});
+
+ws.on('message', (data) => {
+    const message = JSON.parse(data.toString());
+    
+    if (message.type === 'authentication_success') {
+        console.log(`Authenticated as user: ${message.user_id}`);
+        console.log(`Tier: ${message.tier}`);
+        console.log(`Data usage: ${message.data_usage.used_gb}GB / ${message.data_usage.limit_gb}GB`);
+    } else if (message.type === 'authentication_error') {
+        console.error(`Authentication failed: ${message.message}`);
+    }
+});
+```
+
+<Note>
+  Always handle authentication errors gracefully and implement retry logic with exponential backoff for temporary failures.
+</Note>

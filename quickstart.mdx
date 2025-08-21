@@ -1,80 +1,124 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start"
+description: "Connect to QuantCite's real-time cryptocurrency data in minutes"
 ---
 
 ## Get started in three steps
 
-Get your documentation site running locally and make your first customization.
+Connect to our WebSocket API and start receiving real-time orderbook data from 35+ exchanges.
 
-### Step 1: Set up your local environment
+### Step 1: Get your API key
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+  <Accordion icon="key" title="Obtain API credentials">
+    Contact our support team to get your API key with access to:
+    - **50GB monthly data limit**
+    - **WebSocket-only connections** 
+    - **Real-time orderbook updates**
+    - **35+ active exchanges**
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+    Your API key will be in the format: `demo_key_123`
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+  <Accordion icon="chart-line" title="Monitor your usage">
+    Track your data consumption in real-time:
+    ```bash
+    curl "http://localhost:8000/api/v1/data-usage/YOUR_API_KEY"
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    <Tip>Monitor usage regularly to avoid hitting the 50GB monthly limit.</Tip>
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+### Step 2: Connect to WebSocket
 
 <AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+  <Accordion icon="wifi" title="Establish WebSocket connection">
+    Connect to our WebSocket endpoint with your API key:
+    ```
+    ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
+    The connection will automatically authenticate using the API key in the query parameter.
+  </Accordion>
+  <Accordion icon="handshake" title="Authenticate your session">
+    After connecting, send an authentication message:
+    ```json
+    {
+      "type": "authenticate",
+      "api_key": "your_api_key_here"
+    }
+    ```
+    
+    You'll receive a confirmation with your usage statistics and tier information.
   </Accordion>
 </AccordionGroup>
 
-### Step 3: Go live
+### Step 3: Subscribe to data
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<AccordionGroup>
+  <Accordion icon="chart-candlestick" title="Subscribe to orderbook updates">
+    Subscribe to real-time orderbook data for any trading pair:
+    ```json
+    {
+      "type": "subscribe_aggregated",
+      "symbol": "BTC/USDT",
+      "exchanges": ["binance", "okx", "bybit"]
+    }
+    ```
+    
+    Or subscribe to all available exchanges:
+    ```json
+    {
+      "type": "subscribe_aggregated", 
+      "symbol": "BTC/USDT",
+      "exchanges": "all"
+    }
+    ```
+  </Accordion>
+  <Accordion icon="stream" title="Receive real-time updates">
+    Start receiving continuous orderbook updates:
+    ```json
+    {
+      "type": "aggregated_orderbook_update",
+      "symbol": "BTC/USDT",
+      "data": {
+        "bids": [...],
+        "asks": [...],
+        "market_stats": {
+          "best_bid": 113393.9,
+          "best_ask": 113400.0,
+          "spread": 6.1
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you're connected, explore these integration options:
 
 <CardGroup cols={2}>
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
+<Card title="Python Client" icon="python" href="/examples/python">
+  Complete Python WebSocket client with async support.
 </Card>
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
+<Card title="JavaScript Client" icon="js" href="/examples/javascript">
+  Node.js WebSocket client for real-time data streaming.
 </Card>
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
+<Card title="WebSocket Messages" icon="message" href="/websocket/messages">
+  Learn about all available message types and responses.
 </Card>
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
+<Card title="Rate Limits" icon="gauge-high" href="/examples/rate-limits">
+  Understand tier-based rate limiting and data usage.
 </Card>
 
 </CardGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  **Need help?** Check our [API Reference](/api-reference/introduction) for complete documentation.
 </Note>

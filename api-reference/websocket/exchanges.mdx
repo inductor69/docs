@@ -1,0 +1,437 @@
+---
+title: "Exchanges Data"
+description: "Get information about supported exchanges and their current status"
+---
+
+Retrieve comprehensive information about all supported cryptocurrency exchanges, including their current operational status and capabilities.
+
+## Get Exchanges List
+
+Request information about all supported exchanges in the QuantCite system.
+
+### Request
+
+```json
+{
+  "type": "get_exchanges"
+}
+```
+
+**Parameters:**
+- `type` (string, required): Must be "get_exchanges"
+
+### Response
+
+```json
+{
+  "type": "exchanges_data",
+  "data": {
+    "supported_exchanges": [
+      "binance", "okx", "bybit", "kucoin", "gate", "mexc", 
+      "bitget", "cryptocom", "huobi", "coinbase", "kraken"
+    ],
+    "active_exchanges": [
+      "binance", "bybit", "kucoin", "gate", "mexc", 
+      "bitget", "cryptocom", "huobi", "coinbase"
+    ],
+    "total_supported": 42,
+    "total_active": 35,
+    "exchange_status": {
+      "binance": "active",
+      "okx": "active", 
+      "bybit": "active",
+      "kucoin": "active",
+      "gate": "active",
+      "mexc": "active",
+      "bitget": "active",
+      "cryptocom": "active",
+      "huobi": "active",
+      "coinbase": "active",
+      "kraken": "maintenance"
+    }
+  },
+  "timestamp": "2025-08-19T20:45:13.392607"
+}
+```
+
+## Response Fields
+
+### Exchange Lists
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `supported_exchanges` | array | All exchanges supported by the system |
+| `active_exchanges` | array | Exchanges currently providing live data |
+| `total_supported` | number | Total number of supported exchanges |
+| `total_active` | number | Number of currently active exchanges |
+
+### Exchange Status
+
+| Status | Description |
+|--------|-------------|
+| `active` | Exchange is operational and providing live data |
+| `maintenance` | Exchange is temporarily down for maintenance |
+| `offline` | Exchange is offline or experiencing issues |
+| `limited` | Exchange has limited functionality |
+
+### Exchange Information
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exchange_status` | object | Map of exchange names to their current status |
+| `timestamp` | string | ISO 8601 timestamp when the data was retrieved |
+
+## Supported Exchanges
+
+### Tier 1 Exchanges (Highest Volume)
+
+<CardGroup cols={2}>
+  <Card title="Binance" icon="building-columns">
+    **Status:** Active  
+    **Pairs:** 3,826+  
+    **Volume:** Highest global volume
+  </Card>
+  
+  <Card title="OKX" icon="building-columns">
+    **Status:** Active  
+    **Pairs:** 2,400+  
+    **Volume:** Major global exchange
+  </Card>
+  
+  <Card title="Bybit" icon="building-columns">
+    **Status:** Active  
+    **Pairs:** 1,800+  
+    **Volume:** Leading derivatives exchange
+  </Card>
+  
+  <Card title="KuCoin" icon="building-columns">
+    **Status:** Active  
+    **Pairs:** 2,200+  
+    **Volume:** Wide altcoin selection
+  </Card>
+</CardGroup>
+
+### Tier 2 Exchanges (High Volume)
+
+- **Gate.io** - Comprehensive altcoin coverage
+- **MEXC** - Emerging tokens and high volume
+- **Bitget** - Copy trading and derivatives
+- **Crypto.com** - Major retail exchange
+- **Huobi Global** - Established global exchange
+- **Coinbase Pro** - US-regulated exchange
+
+### Tier 3 Exchanges (Medium Volume)
+
+- **Kraken** - Security-focused exchange
+- **Bitfinex** - Professional trading features
+- **Gemini** - US-regulated, institutional focus
+- **Bitstamp** - Established European exchange
+
+## Exchange Categories
+
+### By Region
+
+**Global Exchanges:**
+- Binance, OKX, Bybit, KuCoin, Gate.io, MEXC
+
+**US-Based Exchanges:**
+- Coinbase Pro, Gemini, Kraken (US)
+
+**European Exchanges:**
+- Bitstamp, Kraken (EU)
+
+**Asian Exchanges:**
+- Huobi, Bitfinex
+
+### By Specialization
+
+**Spot Trading:**
+- Binance, Coinbase Pro, Kraken, Bitstamp
+
+**Derivatives:**
+- Bybit, OKX, Bitget, Huobi
+
+**Altcoins:**
+- KuCoin, Gate.io, MEXC
+
+**Institutional:**
+- Coinbase Pro, Gemini, Kraken
+
+## Code Examples
+
+### Python Exchange Monitor
+
+```python
+import json
+import asyncio
+from datetime import datetime
+
+class ExchangeMonitor:
+    def __init__(self):
+        self.exchange_status = {}
+        self.status_history = {}
+    
+    async def get_exchanges(self, websocket):
+        """Request current exchange information"""
+        request = {"type": "get_exchanges"}
+        await websocket.send(json.dumps(request))
+    
+    def handle_exchanges_data(self, data):
+        """Process exchange data response"""
+        exchange_data = data.get('data', {})
+        
+        # Update status tracking
+        current_status = exchange_data.get('exchange_status', {})
+        timestamp = datetime.now()
+        
+        # Check for status changes
+        for exchange, status in current_status.items():
+            old_status = self.exchange_status.get(exchange)
+            
+            if old_status and old_status != status:
+                print(f"Status change: {exchange} {old_status} -> {status}")
+                
+                # Log status change
+                if exchange not in self.status_history:
+                    self.status_history[exchange] = []
+                
+                self.status_history[exchange].append({
+                    'timestamp': timestamp,
+                    'old_status': old_status,
+                    'new_status': status
+                })
+        
+        # Update current status
+        self.exchange_status = current_status
+        
+        # Print summary
+        active = exchange_data.get('active_exchanges', [])
+        total = exchange_data.get('total_supported', 0)
+        
+        print(f"Exchange Status Summary:")
+        print(f"  Active: {len(active)}/{total}")
+        print(f"  Maintenance: {self.count_by_status('maintenance')}")
+        print(f"  Offline: {self.count_by_status('offline')}")
+    
+    def count_by_status(self, status):
+        """Count exchanges by status"""
+        return sum(1 for s in self.exchange_status.values() if s == status)
+    
+    def get_active_exchanges(self):
+        """Get list of currently active exchanges"""
+        return [
+            exchange for exchange, status in self.exchange_status.items()
+            if status == 'active'
+        ]
+    
+    def is_exchange_active(self, exchange):
+        """Check if a specific exchange is active"""
+        return self.exchange_status.get(exchange) == 'active'
+
+# Usage
+monitor = ExchangeMonitor()
+
+# In your WebSocket message handler:
+if message.get('type') == 'exchanges_data':
+    monitor.handle_exchanges_data(message)
+```
+
+### JavaScript Exchange Tracker
+
+```javascript
+class ExchangeTracker {
+    constructor() {
+        this.exchangeStatus = new Map();
+        this.statusCallbacks = [];
+        this.lastUpdate = null;
+    }
+    
+    requestExchanges(websocket) {
+        const request = { type: 'get_exchanges' };
+        websocket.send(JSON.stringify(request));
+    }
+    
+    handleExchangesData(data) {
+        const exchangeData = data.data || {};
+        const currentStatus = exchangeData.exchange_status || {};
+        const timestamp = new Date();
+        
+        // Check for changes
+        const changes = this.detectStatusChanges(currentStatus);
+        
+        // Update status
+        this.exchangeStatus = new Map(Object.entries(currentStatus));
+        this.lastUpdate = timestamp;
+        
+        // Notify callbacks
+        this.statusCallbacks.forEach(callback => {
+            try {
+                callback({
+                    status: currentStatus,
+                    changes: changes,
+                    summary: this.getStatusSummary(exchangeData),
+                    timestamp: timestamp
+                });
+            } catch (error) {
+                console.error('Status callback error:', error);
+            }
+        });
+        
+        // Log summary
+        console.log(`Exchange Status Update:`);
+        console.log(`  Active: ${exchangeData.total_active}/${exchangeData.total_supported}`);
+        
+        if (changes.length > 0) {
+            console.log(`  Status Changes:`);
+            changes.forEach(change => {
+                console.log(`    ${change.exchange}: ${change.from} -> ${change.to}`);
+            });
+        }
+    }
+    
+    detectStatusChanges(newStatus) {
+        const changes = [];
+        
+        for (const [exchange, status] of Object.entries(newStatus)) {
+            const oldStatus = this.exchangeStatus.get(exchange);
+            
+            if (oldStatus && oldStatus !== status) {
+                changes.push({
+                    exchange: exchange,
+                    from: oldStatus,
+                    to: status,
+                    timestamp: new Date()
+                });
+            }
+        }
+        
+        return changes;
+    }
+    
+    getStatusSummary(data) {
+        return {
+            total_supported: data.total_supported || 0,
+            total_active: data.total_active || 0,
+            active_exchanges: data.active_exchanges || [],
+            supported_exchanges: data.supported_exchanges || []
+        };
+    }
+    
+    onStatusChange(callback) {
+        this.statusCallbacks.push(callback);
+    }
+    
+    isExchangeActive(exchange) {
+        return this.exchangeStatus.get(exchange) === 'active';
+    }
+    
+    getActiveExchanges() {
+        const active = [];
+        for (const [exchange, status] of this.exchangeStatus) {
+            if (status === 'active') {
+                active.push(exchange);
+            }
+        }
+        return active;
+    }
+    
+    getExchangesByStatus(targetStatus) {
+        const exchanges = [];
+        for (const [exchange, status] of this.exchangeStatus) {
+            if (status === targetStatus) {
+                exchanges.push(exchange);
+            }
+        }
+        return exchanges;
+    }
+}
+
+// Usage
+const tracker = new ExchangeTracker();
+
+// Set up status change notifications
+tracker.onStatusChange((update) => {
+    if (update.changes.length > 0) {
+        console.warn('Exchange status changes detected:', update.changes);
+    }
+});
+
+// In your WebSocket message handler:
+if (message.type === 'exchanges_data') {
+    tracker.handleExchangesData(message);
+}
+```
+
+## Monitoring Best Practices
+
+### Status Monitoring
+
+```python
+def monitor_exchange_health():
+    """Monitor exchange health and alert on issues"""
+    critical_exchanges = ['binance', 'okx', 'bybit', 'kucoin']
+    
+    for exchange in critical_exchanges:
+        if not monitor.is_exchange_active(exchange):
+            print(f"ALERT: Critical exchange {exchange} is not active!")
+            # Send alert to monitoring system
+            send_alert(f"Exchange {exchange} offline")
+
+def optimize_subscriptions_for_active_exchanges():
+    """Adjust subscriptions based on active exchanges"""
+    active = monitor.get_active_exchanges()
+    
+    # Prefer active exchanges for new subscriptions
+    preferred_exchanges = [ex for ex in ['binance', 'okx', 'bybit'] if ex in active]
+    
+    return preferred_exchanges[:5]  # Use top 5 active exchanges
+```
+
+### Exchange Selection Strategy
+
+```javascript
+class ExchangeSelector {
+    constructor(tracker) {
+        this.tracker = tracker;
+        this.preferences = ['binance', 'okx', 'bybit', 'kucoin', 'gate'];
+    }
+    
+    selectBestExchanges(symbol, maxExchanges = 5) {
+        const active = this.tracker.getActiveExchanges();
+        
+        // Filter preferences by active status
+        const available = this.preferences.filter(ex => active.includes(ex));
+        
+        // Add other active exchanges if needed
+        const additional = active.filter(ex => !this.preferences.includes(ex));
+        
+        return [...available, ...additional].slice(0, maxExchanges);
+    }
+    
+    shouldRebalanceSubscriptions() {
+        // Check if major exchanges went offline
+        const criticalExchanges = ['binance', 'okx', 'bybit'];
+        const criticalOffline = criticalExchanges.filter(ex => 
+            !this.tracker.isExchangeActive(ex)
+        );
+        
+        return criticalOffline.length > 0;
+    }
+}
+```
+
+## Error Handling
+
+### Authentication Required
+
+```json
+{
+  "type": "error",
+  "error": "authentication_required",
+  "message": "You must authenticate before requesting exchange data"
+}
+```
+
+<Note>
+  Exchange status can change frequently due to maintenance, network issues, or other operational factors. Monitor status regularly and implement fallback strategies for critical exchanges.
+</Note>

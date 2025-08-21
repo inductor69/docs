@@ -1,0 +1,141 @@
+---
+title: "WebSocket Connection"
+description: "How to establish and maintain WebSocket connections to QuantCite"
+---
+
+## Connection URL
+
+Connect to the QuantCite WebSocket endpoint using your API key:
+
+```
+ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+```
+
+## Connection Flow
+
+<Steps>
+  <Step title="Establish Connection">
+    Connect to the WebSocket endpoint with your API key in the query parameter.
+    
+    ```javascript
+    const ws = new WebSocket('ws://localhost:8000/api/v1/ws?api_key=demo_key_123');
+    ```
+  </Step>
+  
+  <Step title="Receive Welcome Message">
+    Upon successful connection, you'll receive a welcome message with available commands.
+    
+    ```json
+    {
+      "type": "welcome",
+      "message": "Connected to QuantCite WebSocket API",
+      "available_commands": [
+        "authenticate", "subscribe_aggregated", "get_exchanges", "get_pairs"
+      ]
+    }
+    ```
+  </Step>
+  
+  <Step title="Authenticate Session">
+    Send authentication message to verify your API key and get session details.
+    
+    ```json
+    {
+      "type": "authenticate",
+      "api_key": "demo_key_123"
+    }
+    ```
+  </Step>
+</Steps>
+
+## Connection Health
+
+### Ping/Pong Messages
+
+Maintain connection health using ping/pong messages:
+
+**Send Ping:**
+```json
+{
+  "type": "ping"
+}
+```
+
+**Receive Pong:**
+```json
+{
+  "type": "pong",
+  "timestamp": "2025-08-19T20:45:13.392607",
+  "server_time": "2025-08-19T20:45:13.392607",
+  "latency_ms": 2.5
+}
+```
+
+### Connection Monitoring
+
+Monitor your connection status:
+- Send ping messages every 30 seconds
+- Handle connection drops gracefully
+- Implement exponential backoff for reconnections
+- Monitor data usage in real-time
+
+## Error Handling
+
+### Connection Errors
+
+Common connection issues and solutions:
+
+<AccordionGroup>
+  <Accordion title="Invalid API Key">
+    **Error:** Connection refused or immediate disconnect
+    
+    **Solution:** Verify your API key is valid and active
+    ```bash
+    curl "http://localhost:8000/api/v1/data-usage/YOUR_API_KEY"
+    ```
+  </Accordion>
+  
+  <Accordion title="Rate Limit Exceeded">
+    **Error:** Connection throttled or rejected
+    
+    **Solution:** Implement proper rate limiting based on your tier
+    - Basic: 600 req/min
+    - Premium: 1,200 req/min  
+    - Developer: 1,000 req/min
+    - Enterprise: 10,000 req/min
+  </Accordion>
+  
+  <Accordion title="Data Limit Exceeded">
+    **Error:** Connection terminated due to data usage
+    
+    **Solution:** Monitor your 50GB monthly limit
+    ```json
+    {
+      "type": "data_limit_exceeded",
+      "message": "Monthly data limit of 50GB exceeded"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Connection Management" icon="wifi">
+    - Use persistent connections
+    - Implement automatic reconnection
+    - Handle network interruptions gracefully
+    - Monitor connection latency
+  </Card>
+  
+  <Card title="Resource Usage" icon="gauge-high">
+    - Monitor data consumption
+    - Unsubscribe from unused symbols
+    - Implement proper error handling
+    - Use ping/pong for health checks
+  </Card>
+</CardGroup>
+
+<Warning>
+  The QuantCite API uses **WebSocket-only** connections. HTTP endpoints are only available for health checks and data usage monitoring.
+</Warning>

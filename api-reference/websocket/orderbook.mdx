@@ -1,0 +1,367 @@
+---
+title: "Orderbook Data"
+description: "Get current orderbook snapshots and understand the data structure"
+---
+
+Request current orderbook snapshots for active subscriptions and understand the structure of real-time orderbook updates.
+
+## Get Current Orderbook
+
+Request an immediate snapshot of the current orderbook state for a subscribed trading pair.
+
+### Request
+
+```json
+{
+  "type": "get_aggregated_orderbook",
+  "symbol": "BTC/USDT"
+}
+```
+
+**Parameters:**
+- `type` (string, required): Must be "get_aggregated_orderbook"
+- `symbol` (string, required): Trading pair you want the orderbook for (must be actively subscribed)
+
+### Response
+
+```json
+{
+  "type": "aggregated_orderbook_data",
+  "symbol": "BTC/USDT",
+  "timestamp": "2025-08-19T19:45:13.392607",
+  "data": {
+    "bids": [
+      {
+        "price": 113393.9,
+        "amount": 0.0001,
+        "exchanges": ["bybit"],
+        "exchange_count": 1,
+        "value": 11.33939
+      },
+      {
+        "price": 113390.0,
+        "amount": 0.0025,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 283.475
+      }
+    ],
+    "asks": [
+      {
+        "price": 113400.0,
+        "amount": 0.0005,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 56.7
+      },
+      {
+        "price": 113405.5,
+        "amount": 0.0015,
+        "exchanges": ["kucoin"],
+        "exchange_count": 1,
+        "value": 170.1083
+      }
+    ],
+    "market_stats": {
+      "best_bid": 113393.9,
+      "best_ask": 113400.0,
+      "spread": 6.1,
+      "spread_percent": 0.0054,
+      "mid_price": 113396.95,
+      "total_bid_volume": 0.0026,
+      "total_ask_volume": 0.002,
+      "participating_exchanges": 4
+    }
+  }
+}
+```
+
+## Data Structure
+
+### Orderbook Entry
+
+Each bid and ask entry contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `price` | number | Price level for this orderbook entry |
+| `amount` | number | Total aggregated amount at this price level |
+| `exchanges` | array | List of exchanges contributing to this price level |
+| `exchange_count` | number | Number of exchanges providing liquidity at this level |
+| `value` | number | Total value (price × amount) at this level |
+
+### Market Statistics
+
+Real-time calculated market statistics:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `best_bid` | number | Highest bid price across all exchanges |
+| `best_ask` | number | Lowest ask price across all exchanges |
+| `spread` | number | Absolute spread (best_ask - best_bid) |
+| `spread_percent` | number | Spread as percentage of mid price |
+| `mid_price` | number | Mid-market price ((best_bid + best_ask) / 2) |
+| `total_bid_volume` | number | Total volume on the bid side |
+| `total_ask_volume` | number | Total volume on the ask side |
+| `participating_exchanges` | number | Number of exchanges contributing data |
+
+## Real-time Updates
+
+### Orderbook Update Structure
+
+```json
+{
+  "type": "aggregated_orderbook_update",
+  "symbol": "BTC/USDT",
+  "timestamp": "2025-08-19T19:45:13.392607",
+  "update_number": 1,
+  "subscription_id": "sub_123456",
+  "data": {
+    "bids": [...],
+    "asks": [...],
+    "market_stats": {...}
+  }
+}
+```
+
+**Update Fields:**
+- `type`: Always "aggregated_orderbook_update"
+- `symbol`: Trading pair being updated
+- `timestamp`: ISO 8601 timestamp of the update
+- `update_number`: Sequential number for this subscription
+- `subscription_id`: Unique identifier linking to your subscription
+- `data`: Complete orderbook data (same structure as snapshot)
+
+### Update Frequency
+
+- **High-frequency symbols** (BTC/USDT, ETH/USDT): Updates every 100-500ms
+- **Medium-frequency symbols**: Updates every 1-2 seconds
+- **Low-frequency symbols**: Updates every 5-10 seconds
+
+## Error Responses
+
+### No Active Subscription
+
+```json
+{
+  "type": "error",
+  "error": "no_subscription",
+  "message": "No active subscription found for BTC/USDT",
+  "symbol": "BTC/USDT"
+}
+```
+
+### Authentication Required
+
+```json
+{
+  "type": "error",
+  "error": "authentication_required",
+  "message": "You must authenticate before requesting orderbook data"
+}
+```
+
+## Code Examples
+
+### Python Orderbook Handler
+
+```python
+import json
+import asyncio
+from datetime import datetime
+
+class OrderbookHandler:
+    def __init__(self):
+        self.orderbooks = {}
+        self.last_update = {}
+    
+    def handle_orderbook_update(self, data):
+        """Process real-time orderbook updates"""
+        symbol = data.get('symbol')
+        timestamp = data.get('timestamp')
+        orderbook = data.get('data', {})
+        
+        # Store the orderbook
+        self.orderbooks[symbol] = {
+            'timestamp': timestamp,
+            'data': orderbook
+        }
+        
+        # Extract market stats
+        stats = orderbook.get('market_stats', {})
+        
+        print(f"[{symbol}] {timestamp}")
+        print(f"  Best Bid: {stats.get('best_bid')}")
+        print(f"  Best Ask: {stats.get('best_ask')}")
+        print(f"  Spread: {stats.get('spread')} ({stats.get('spread_percent'):.4f}%)")
+        print(f"  Exchanges: {stats.get('participating_exchanges')}")
+        
+        # Update tracking
+        self.last_update[symbol] = datetime.now()
+    
+    def get_best_prices(self, symbol):
+        """Get current best bid/ask for a symbol"""
+        if symbol in self.orderbooks:
+            stats = self.orderbooks[symbol]['data'].get('market_stats', {})
+            return {
+                'bid': stats.get('best_bid'),
+                'ask': stats.get('best_ask'),
+                'spread': stats.get('spread')
+            }
+        return None
+    
+    def get_depth(self, symbol, levels=5):
+        """Get orderbook depth (top N levels)"""
+        if symbol not in self.orderbooks:
+            return None
+        
+        data = self.orderbooks[symbol]['data']
+        return {
+            'bids': data.get('bids', [])[:levels],
+            'asks': data.get('asks', [])[:levels]
+        }
+
+# Usage example
+handler = OrderbookHandler()
+
+# In your WebSocket message handler:
+if message_data.get('type') == 'aggregated_orderbook_update':
+    handler.handle_orderbook_update(message_data)
+    
+    # Get current best prices
+    prices = handler.get_best_prices('BTC/USDT')
+    if prices:
+        print(f"Current BTC/USDT: {prices['bid']} / {prices['ask']}")
+```
+
+### JavaScript Orderbook Manager
+
+```javascript
+class OrderbookManager {
+    constructor() {
+        this.orderbooks = new Map();
+        this.updateCallbacks = new Map();
+    }
+    
+    handleOrderbookUpdate(data) {
+        const symbol = data.symbol;
+        const timestamp = data.timestamp;
+        const orderbook = data.data;
+        
+        // Store orderbook
+        this.orderbooks.set(symbol, {
+            timestamp,
+            data: orderbook,
+            lastUpdate: Date.now()
+        });
+        
+        // Trigger callbacks
+        const callbacks = this.updateCallbacks.get(symbol) || [];
+        callbacks.forEach(callback => {
+            try {
+                callback(symbol, orderbook);
+            } catch (error) {
+                console.error('Callback error:', error);
+            }
+        });
+        
+        // Log update
+        const stats = orderbook.market_stats;
+        console.log(`${symbol}: ${stats.best_bid} / ${stats.best_ask} (${stats.spread})`);
+    }
+    
+    onUpdate(symbol, callback) {
+        if (!this.updateCallbacks.has(symbol)) {
+            this.updateCallbacks.set(symbol, []);
+        }
+        this.updateCallbacks.get(symbol).push(callback);
+    }
+    
+    getBestPrices(symbol) {
+        const orderbook = this.orderbooks.get(symbol);
+        if (!orderbook) return null;
+        
+        const stats = orderbook.data.market_stats;
+        return {
+            bid: stats.best_bid,
+            ask: stats.best_ask,
+            spread: stats.spread,
+            timestamp: orderbook.timestamp
+        };
+    }
+    
+    getSpread(symbol) {
+        const prices = this.getBestPrices(symbol);
+        return prices ? {
+            absolute: prices.spread,
+            percentage: ((prices.ask - prices.bid) / prices.bid * 100).toFixed(4)
+        } : null;
+    }
+}
+
+// Usage
+const manager = new OrderbookManager();
+
+// Set up callback for BTC/USDT updates
+manager.onUpdate('BTC/USDT', (symbol, orderbook) => {
+    const stats = orderbook.market_stats;
+    if (stats.spread_percent > 0.1) {  // Alert on high spread
+        console.warn(`High spread on ${symbol}: ${stats.spread_percent.toFixed(4)}%`);
+    }
+});
+
+// In your WebSocket message handler:
+if (message.type === 'aggregated_orderbook_update') {
+    manager.handleOrderbookUpdate(message);
+}
+```
+
+## Data Analysis
+
+### Spread Analysis
+
+```python
+def analyze_spread(orderbook_data):
+    """Analyze spread characteristics"""
+    stats = orderbook_data.get('market_stats', {})
+    
+    spread_abs = stats.get('spread', 0)
+    spread_pct = stats.get('spread_percent', 0)
+    mid_price = stats.get('mid_price', 0)
+    
+    analysis = {
+        'spread_absolute': spread_abs,
+        'spread_percentage': spread_pct,
+        'spread_category': 'tight' if spread_pct < 0.01 else 'wide' if spread_pct > 0.1 else 'normal',
+        'mid_price': mid_price,
+        'liquidity_score': stats.get('participating_exchanges', 0)
+    }
+    
+    return analysis
+```
+
+### Volume Analysis
+
+```python
+def analyze_volume(orderbook_data):
+    """Analyze orderbook volume distribution"""
+    bids = orderbook_data.get('bids', [])
+    asks = orderbook_data.get('asks', [])
+    
+    # Calculate volume at different price levels
+    bid_volumes = [entry['amount'] for entry in bids[:10]]  # Top 10 levels
+    ask_volumes = [entry['amount'] for entry in asks[:10]]
+    
+    return {
+        'total_bid_volume': sum(bid_volumes),
+        'total_ask_volume': sum(ask_volumes),
+        'bid_ask_ratio': sum(bid_volumes) / sum(ask_volumes) if ask_volumes else 0,
+        'depth_levels': len(bids) + len(asks),
+        'top_bid_volume': bid_volumes[0] if bid_volumes else 0,
+        'top_ask_volume': ask_volumes[0] if ask_volumes else 0
+    }
+```
+
+<Note>
+  Orderbook snapshots and real-time updates both count toward your 50GB monthly data limit. Use snapshots sparingly and rely on real-time updates for continuous data.
+</Note>

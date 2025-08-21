@@ -1,44 +1,58 @@
-# Mintlify Starter Kit
+# QuantCite API Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Real-time cryptocurrency market data through WebSocket connections with 50GB monthly data limits.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+This documentation site provides comprehensive guides and API reference for integrating with the QuantCite Data Pipeline, which aggregates orderbook data from 35+ active exchanges.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## Features
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- **WebSocket API Documentation** - Complete guide to real-time data streaming
+- **HTTP Endpoints** - Health checks and data usage monitoring
+- **Client Examples** - Python and JavaScript implementation examples
+- **Rate Limiting Guide** - Tier-based limits and best practices
+- **Interactive API Reference** - Complete message type documentation
 
 ## Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview documentation changes locally:
 
-```
+```bash
 npm i -g mint
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+Run the development server at the root of your documentation:
 
-```
+```bash
 mint dev
 ```
 
 View your local preview at `http://localhost:3000`.
 
-## Publishing changes
+## API Overview
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+- **Base URL:** `http://localhost:8000`
+- **WebSocket:** `ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY`
+- **Data Limit:** 50GB per API key per month
+- **Exchanges:** 35+ active cryptocurrency exchanges
+- **Trading Pairs:** 40,747+ supported pairs
+- **Rate Limits:** 600-10,000 requests/minute (tier-based)
+
+## Quick Start
+
+1. **Get API Key** - Contact support for your API credentials
+2. **Connect WebSocket** - Establish connection with authentication
+3. **Subscribe to Data** - Choose exchanges and trading pairs
+4. **Monitor Usage** - Track your 50GB monthly data allowance
 
 ## Need help?
 
-### Troubleshooting
+### API Support
+- Monitor usage: `/api/v1/data-usage/{api_key}`
+- Health check: `/api/v1/health`
+- WebSocket endpoint: `/api/v1/ws?api_key=YOUR_API_KEY`
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
-- [Mintlify community](https://mintlify.com/community)
+### Documentation
+- [Quick Start Guide](/quickstart)
+- [WebSocket Messages](/websocket/messages)
+- [API Reference](/api-reference/introduction)
+- [Client Examples](/examples/python)

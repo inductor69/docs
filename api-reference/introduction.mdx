@@ -1,33 +1,117 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Complete HTTP and WebSocket API reference for QuantCite Data Pipeline"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+The QuantCite Data Pipeline provides real-time cryptocurrency market data through a combination of HTTP endpoints and WebSocket connections. The API is designed for **WebSocket-only** data streaming with HTTP endpoints available for health checks and usage monitoring.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+http://localhost:8000
+```
+
+## WebSocket URL
+
+```
+ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API access requires a valid API key:
+- **HTTP Endpoints**: API key as path parameter or query parameter
+- **WebSocket**: API key in connection URL and authentication message
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+## API Features
+
+<CardGroup cols={2}>
+  <Card title="Real-time Streaming" icon="wifi">
+    WebSocket-based orderbook updates from 35+ exchanges with sub-second latency.
+  </Card>
+  
+  <Card title="50GB Data Limit" icon="database">
+    Generous monthly data allowance with real-time usage tracking and automatic resets.
+  </Card>
+  
+  <Card title="Multi-Exchange Support" icon="building-columns">
+    Aggregated data from major cryptocurrency exchanges worldwide.
+  </Card>
+  
+  <Card title="Rate Limiting" icon="gauge-high">
+    Tier-based limits from 600 to 10,000 requests per minute with usage monitoring.
+  </Card>
+</CardGroup>
+
+## Supported Data
+
+### Exchanges
+- **Total Supported**: 42 exchanges
+- **Active Exchanges**: 35 exchanges  
+- **Major Exchanges**: Binance, OKX, Bybit, KuCoin, Gate.io, MEXC, Bitget, Crypto.com
+
+### Trading Pairs
+- **Total Pairs**: 40,747+ trading pairs
+- **Major Pairs**: BTC/USDT, ETH/USDT, BNB/USDT, ADA/USDT
+- **Quote Currencies**: USDT, USD, EUR, BTC, ETH
+
+### Data Types
+- **Orderbook Data**: Real-time bid/ask levels with depth
+- **Market Statistics**: Best bid/ask, spread, mid-price, volume
+- **Exchange Information**: Active status, supported pairs
+- **Usage Metrics**: Data consumption tracking
+
+## Rate Limits by Tier
+
+| Tier | Rate Limit | Monthly Messages | Max Connections | Data Limit |
+|------|------------|------------------|-----------------|------------|
+| Basic | 600 req/min | 10,000 | 5 | 50GB |
+| Premium | 1,200 req/min | 100,000 | 20 | 50GB |
+| Developer | 1,000 req/min | 50,000 | 15 | 50GB |
+| Enterprise | 10,000 req/min | 1,000,000 | 100 | 50GB |
+
+## Error Handling
+
+### HTTP Status Codes
+- `200` - Success
+- `400` - Bad Request (invalid parameters)
+- `401` - Unauthorized (invalid API key)
+- `404` - Not Found (endpoint/resource not found)
+- `429` - Too Many Requests (rate limit exceeded)
+- `500` - Internal Server Error
+
+### WebSocket Error Types
+- `authentication_error` - Invalid API key or authentication failure
+- `subscription_error` - Invalid symbol or exchange
+- `rate_limit_exceeded` - Too many requests per minute
+- `data_limit_exceeded` - Monthly data limit reached
+- `invalid_symbol` - Unsupported trading pair
+- `exchange_unavailable` - Exchange not supported or offline
+
+## Getting Started
+
+<CardGroup cols={2}>
+  <Card title="HTTP Endpoints" icon="terminal" href="/api-reference/endpoint/health">
+    Health checks and data usage monitoring via HTTP.
+  </Card>
+  
+  <Card title="WebSocket Messages" icon="message" href="/api-reference/websocket/subscribe">
+    Real-time data subscriptions and orderbook updates.
+  </Card>
+  
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get connected and receiving data in minutes.
+  </Card>
+  
+  <Card title="Client Examples" icon="code" href="/examples/python">
+    Complete Python and JavaScript implementation examples.
+  </Card>
+</CardGroup>
+
+## System Statistics
+
+<Info>
+  **35 Active Exchanges** • **40,747+ Trading Pairs** • **50GB Monthly Limit** • **Sub-second Latency** • **99.9% Uptime**
+</Info>

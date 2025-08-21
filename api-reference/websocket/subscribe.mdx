@@ -1,0 +1,302 @@
+---
+title: "Subscribe to Orderbook"
+description: "Subscribe to real-time aggregated orderbook updates via WebSocket"
+---
+
+Subscribe to real-time orderbook updates for specific trading pairs across multiple exchanges. This is the primary method for receiving live market data through the QuantCite API.
+
+## Message Format
+
+### Subscribe to Specific Exchanges
+
+**Request:**
+```json
+{
+  "type": "subscribe_aggregated",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin"]
+}
+```
+
+**Parameters:**
+- `type` (string, required): Must be "subscribe_aggregated"
+- `symbol` (string, required): Trading pair in format "BASE/QUOTE" (e.g., "BTC/USDT")
+- `exchanges` (array, required): List of exchange names to aggregate data from
+
+### Subscribe to All Available Exchanges
+
+**Request:**
+```json
+{
+  "type": "subscribe_aggregated",
+  "symbol": "BTC/USDT",
+  "exchanges": "all"
+}
+```
+
+**Parameters:**
+- `exchanges` (string): Use "all" to subscribe to all available exchanges for the symbol
+
+## Response Messages
+
+### Successful Subscription
+
+**Response:**
+```json
+{
+  "type": "aggregated_subscription_response",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin"],
+  "requested": ["binance", "okx", "bybit", "kucoin"],
+  "success": true,
+  "message": "Subscribed to BTC/USDT on 4 exchanges",
+  "subscription_id": "sub_123456"
+}
+```
+
+**Response Fields:**
+- `type`: Always "aggregated_subscription_response"
+- `symbol`: The trading pair you subscribed to
+- `exchanges`: Array of exchanges that were successfully subscribed to
+- `requested`: Array of exchanges that were requested (for comparison)
+- `success`: Boolean indicating if subscription was successful
+- `message`: Human-readable success message
+- `subscription_id`: Unique identifier for this subscription
+
+### Subscription to All Exchanges
+
+**Response:**
+```json
+{
+  "type": "aggregated_subscription_response",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin", "gate", "mexc", "bitget", "cryptocom"],
+  "requested": "all",
+  "success": true,
+  "message": "Subscribed to BTC/USDT on 25 exchanges",
+  "subscription_id": "sub_789012"
+}
+```
+
+## Real-time Updates
+
+Once subscribed, you'll receive continuous orderbook updates:
+
+```json
+{
+  "type": "aggregated_orderbook_update",
+  "symbol": "BTC/USDT",
+  "timestamp": "2025-08-19T19:45:13.392607",
+  "update_number": 1,
+  "subscription_id": "sub_123456",
+  "data": {
+    "bids": [
+      {
+        "price": 113393.9,
+        "amount": 0.0001,
+        "exchanges": ["bybit"],
+        "exchange_count": 1,
+        "value": 11.33939
+      },
+      {
+        "price": 113390.0,
+        "amount": 0.0025,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 283.475
+      }
+    ],
+    "asks": [
+      {
+        "price": 113400.0,
+        "amount": 0.0005,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 56.7
+      }
+    ],
+    "market_stats": {
+      "best_bid": 113393.9,
+      "best_ask": 113400.0,
+      "spread": 6.1,
+      "spread_percent": 0.0054,
+      "mid_price": 113396.95,
+      "total_bid_volume": 0.0026,
+      "total_ask_volume": 0.002,
+      "participating_exchanges": 4
+    }
+  }
+}
+```
+
+## Error Responses
+
+### Invalid Symbol
+
+```json
+{
+  "type": "subscription_error",
+  "error": "invalid_symbol",
+  "message": "Symbol BTC/INVALID is not supported",
+  "symbol": "BTC/INVALID",
+  "suggested_symbols": ["BTC/USDT", "BTC/USD", "BTC/EUR"]
+}
+```
+
+### Exchange Not Available
+
+```json
+{
+  "type": "subscription_error",
+  "error": "exchange_unavailable",
+  "message": "Exchange 'invalid_exchange' is not supported",
+  "exchange": "invalid_exchange",
+  "supported_exchanges": ["binance", "okx", "bybit", "kucoin"]
+}
+```
+
+### Authentication Required
+
+```json
+{
+  "type": "error",
+  "error": "authentication_required",
+  "message": "You must authenticate before subscribing to data"
+}
+```
+
+## Supported Symbols
+
+### Major Trading Pairs
+- **BTC/USDT** - Bitcoin/Tether (most liquid)
+- **ETH/USDT** - Ethereum/Tether
+- **BNB/USDT** - Binance Coin/Tether
+- **ADA/USDT** - Cardano/Tether
+- **SOL/USDT** - Solana/Tether
+- **XRP/USDT** - Ripple/Tether
+
+### Quote Currencies
+- **USDT** - Tether (most common)
+- **USD** - US Dollar
+- **EUR** - Euro
+- **BTC** - Bitcoin pairs
+- **ETH** - Ethereum pairs
+
+## Supported Exchanges
+
+### Tier 1 Exchanges (High Volume)
+- **binance** - Binance
+- **okx** - OKX
+- **bybit** - Bybit
+- **kucoin** - KuCoin
+- **gate** - Gate.io
+- **mexc** - MEXC
+
+### Tier 2 Exchanges
+- **bitget** - Bitget
+- **cryptocom** - Crypto.com
+- **huobi** - Huobi Global
+- **coinbase** - Coinbase Pro
+- **kraken** - Kraken
+
+## Code Examples
+
+### Python Subscription
+```python
+import asyncio
+import websockets
+import json
+
+async def subscribe_to_symbol():
+    uri = "ws://localhost:8000/api/v1/ws?api_key=demo_key_123"
+    
+    async with websockets.connect(uri) as websocket:
+        # Authenticate first
+        auth_msg = {"type": "authenticate", "api_key": "demo_key_123"}
+        await websocket.send(json.dumps(auth_msg))
+        
+        # Wait for auth response
+        auth_response = await websocket.recv()
+        print("Auth:", json.loads(auth_response))
+        
+        # Subscribe to BTC/USDT on specific exchanges
+        subscribe_msg = {
+            "type": "subscribe_aggregated",
+            "symbol": "BTC/USDT",
+            "exchanges": ["binance", "okx", "bybit"]
+        }
+        await websocket.send(json.dumps(subscribe_msg))
+        
+        # Listen for updates
+        async for message in websocket:
+            data = json.loads(message)
+            if data.get("type") == "aggregated_orderbook_update":
+                stats = data["data"]["market_stats"]
+                print(f"BTC/USDT: {stats['best_bid']} / {stats['best_ask']}")
+
+asyncio.run(subscribe_to_symbol())
+```
+
+### JavaScript Subscription
+```javascript
+const WebSocket = require('ws');
+
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws?api_key=demo_key_123');
+
+ws.on('open', () => {
+    // Authenticate
+    const authMsg = {
+        type: 'authenticate',
+        api_key: 'demo_key_123'
+    };
+    ws.send(JSON.stringify(authMsg));
+});
+
+ws.on('message', (data) => {
+    const message = JSON.parse(data.toString());
+    
+    if (message.type === 'authentication_success') {
+        // Subscribe to multiple symbols
+        const symbols = ['BTC/USDT', 'ETH/USDT'];
+        
+        symbols.forEach(symbol => {
+            const subscribeMsg = {
+                type: 'subscribe_aggregated',
+                symbol: symbol,
+                exchanges: 'all'
+            };
+            ws.send(JSON.stringify(subscribeMsg));
+        });
+    }
+    
+    if (message.type === 'aggregated_orderbook_update') {
+        const { symbol, data: orderbook } = message;
+        const stats = orderbook.market_stats;
+        console.log(`${symbol}: ${stats.best_bid} / ${stats.best_ask}`);
+    }
+});
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Selective Subscriptions" icon="filter">
+    Subscribe only to symbols you actively need. Each subscription consumes data from your 50GB monthly limit.
+  </Card>
+  
+  <Card title="Exchange Selection" icon="building-columns">
+    Choose specific exchanges instead of "all" to reduce data volume and focus on the most liquid markets.
+  </Card>
+  
+  <Card title="Error Handling" icon="shield">
+    Always handle subscription errors and implement retry logic for failed subscriptions.
+  </Card>
+  
+  <Card title="Data Management" icon="database">
+    Monitor your data usage and unsubscribe from unused symbols to conserve your monthly allowance.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Each active subscription continuously streams data and counts toward your 50GB monthly limit. Monitor your usage and unsubscribe from symbols you no longer need.
+</Warning>

@@ -1,97 +1,91 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "QuantCite Data Pipeline API"
+description: "Real-time cryptocurrency market data through WebSocket connections with 50GB monthly data limits"
 ---
 
-## Setting up
+## Overview
 
-Get your documentation site up and running in minutes.
+The QuantCite Data Pipeline provides real-time cryptocurrency market data through **WebSocket-only** connections. Our system aggregates orderbook data from 35+ active exchanges, offering comprehensive trading pair information with built-in data usage monitoring.
 
 <Card
-  title="Start here"
+  title="Quick Start"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Get connected to real-time market data in minutes.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Key Features
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="WebSocket Streaming"
+    icon="wifi"
+    href="/websocket/connection"
   >
-    Edit your docs locally and preview them in real time.
+    Real-time orderbook updates from multiple exchanges via WebSocket connections.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="50GB Monthly Limit"
+    icon="database"
+    href="/api-reference/endpoint/data-usage"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Generous data allowance with real-time usage monitoring and automatic resets.
   </Card>
   <Card
-    title="API documentation"
+    title="35+ Exchanges"
+    icon="building-columns"
+    href="/api-reference/websocket/exchanges"
+  >
+    Access aggregated data from major cryptocurrency exchanges worldwide.
+  </Card>
+  <Card
+    title="Rate Limiting"
+    icon="gauge-high"
+    href="/examples/rate-limits"
+  >
+    Tier-based limits from 600 to 10,000 requests per minute.
+  </Card>
+</Columns>
+
+## Get Started
+
+Everything you need to integrate with our real-time data pipeline.
+
+<Columns cols={2}>
+  <Card
+    title="Python Client"
+    icon="python"
+    href="/examples/python"
+  >
+    Complete Python WebSocket client with authentication and error handling.
+  </Card>
+  <Card
+    title="JavaScript Client"
+    icon="js"
+    href="/examples/javascript"
+  >
+    Node.js WebSocket client example for real-time data streaming.
+  </Card>
+  <Card
+    title="WebSocket Messages"
+    icon="message"
+    href="/websocket/messages"
+  >
+    Learn about all available WebSocket message types and responses.
+  </Card>
+  <Card
+    title="API Reference"
     icon="terminal"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Complete HTTP and WebSocket API documentation.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## System Stats
 
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Info>
+  **35 Active Exchanges** • **40,747+ Trading Pairs** • **50GB Monthly Data Limit** • **Up to 10,000 req/min**
+</Info>

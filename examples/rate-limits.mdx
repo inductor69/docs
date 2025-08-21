@@ -1,0 +1,466 @@
+---
+title: "Rate Limits & Data Usage"
+description: "Understanding tier-based rate limits and managing your 50GB monthly data allowance"
+---
+
+## Rate Limiting Tiers
+
+QuantCite uses tier-based rate limiting to ensure fair usage across all users:
+
+| Tier | Rate Limit | Monthly Messages | Max Connections | Data Limit |
+|------|------------|------------------|-----------------|------------|
+| Basic | 600 req/min | 10,000 messages | 5 connections | 50GB |
+| Premium | 1,200 req/min | 100,000 messages | 20 connections | 50GB |
+| Developer | 1,000 req/min | 50,000 messages | 15 connections | 50GB |
+| Enterprise | 10,000 req/min | 1,000,000 messages | 100 connections | 50GB |
+
+## Data Usage Monitoring
+
+### Real-time Usage Tracking
+
+Monitor your data consumption via HTTP endpoint:
+
+```bash
+curl "http://localhost:8000/api/v1/data-usage/demo_key_123"
+```
+
+**Response:**
+```json
+{
+  "user_id": "cb88461f-421a-4ac8-9722-afe248a40ae6",
+  "username": "trader123",
+  "billing_tier": "premium",
+  "api_key_active": true,
+  "data_usage": {
+    "used_gb": 12.5,
+    "limit_gb": 50.0,
+    "remaining_gb": 37.5,
+    "usage_percentage": 25.0,
+    "bytes_used": 13421772800,
+    "bytes_limit": 53687091200
+  },
+  "billing_period": {
+    "reset_date": "2025-01-15T00:00:00Z",
+    "days_until_reset": 15,
+    "next_reset": "2025-02-15T00:00:00Z"
+  },
+  "status": {
+    "limit_exceeded": false,
+    "warning_threshold": false,
+    "api_key_status": "active"
+  }
+}
+```
+
+### WebSocket Usage Notifications
+
+Receive real-time warnings when approaching limits:
+
+**Data Limit Warning:**
+```json
+{
+  "type": "data_limit_warning",
+  "message": "Data streaming limit exceeded",
+  "data_usage": {
+    "used_gb": 52.3,
+    "limit_gb": 50.0,
+    "exceeded_by_gb": 2.3,
+    "usage_percentage": 104.6
+  },
+  "action_required": "Contact support to increase your data limit"
+}
+```
+
+**Rate Limit Warning:**
+```json
+{
+  "type": "rate_limit_warning",
+  "message": "Approaching rate limit",
+  "current_rate": 580,
+  "limit": 600,
+  "window": "per_minute",
+  "reset_time": "2025-01-30T10:31:00Z"
+}
+```
+
+## Rate Limiting Implementation
+
+### Python Rate Limiter
+```python
+import asyncio
+import time
+from collections import deque
+
+class RateLimiter:
+    def __init__(self, max_requests, time_window=60):
+        self.max_requests = max_requests
+        self.time_window = time_window
+        self.requests = deque()
+    
+    async def wait_if_needed(self):
+        """Wait if rate limit would be exceeded"""
+        now = time.time()
+        
+        # Remove old requests outside the time window
+        while self.requests and self.requests[0] <= now - self.time_window:
+            self.requests.popleft()
+        
+        # Check if we're at the limit
+        if len(self.requests) >= self.max_requests:
+            # Calculate how long to wait
+            oldest_request = self.requests[0]
+            wait_time = self.time_window - (now - oldest_request)
+            
+            if wait_time > 0:
+                print(f"Rate limit reached, waiting {wait_time:.2f}s")
+                await asyncio.sleep(wait_time)
+                return await self.wait_if_needed()
+        
+        # Record this request
+        self.requests.append(now)
+        return True
+
+class QuantCiteClientWithRateLimit:
+    def __init__(self, api_key, tier='basic'):
+        self.api_key = api_key
+        
+        # Set rate limits based on tier
+        rate_limits = {
+            'basic': 600,
+            'premium': 1200,
+            'developer': 1000,
+            'enterprise': 10000
+        }
+        
+        self.rate_limiter = RateLimiter(rate_limits.get(tier, 600))
+        self.websocket = None
+    
+    async def send_message(self, message):
+        """Send message with rate limiting"""
+        await self.rate_limiter.wait_if_needed()
+        
+        if self.websocket:
+            await self.websocket.send(json.dumps(message))
+            return True
+        return False
+    
+    async def subscribe_with_rate_limit(self, symbols, exchanges='all'):
+        """Subscribe to multiple symbols with rate limiting"""
+        for symbol in symbols:
+            subscribe_msg = {
+                "type": "subscribe_aggregated",
+                "symbol": symbol,
+                "exchanges": exchanges
+            }
+            
+            await self.send_message(subscribe_msg)
+            print(f"Subscribed to {symbol}")
+            
+            # Small delay between subscriptions
+            await asyncio.sleep(0.1)
+```
+
+### JavaScript Rate Limiter
+```javascript
+class RateLimiter {
+    constructor(maxRequests, timeWindow = 60000) {
+        this.maxRequests = maxRequests;
+        this.timeWindow = timeWindow;
+        this.requests = [];
+    }
+    
+    async waitIfNeeded() {
+        const now = Date.now();
+        
+        // Remove old requests
+        this.requests = this.requests.filter(
+            timestamp => now - timestamp < this.timeWindow
+        );
+        
+        // Check if we're at the limit
+        if (this.requests.length >= this.maxRequests) {
+            const oldestRequest = Math.min(...this.requests);
+            const waitTime = this.timeWindow - (now - oldestRequest);
+            
+            if (waitTime > 0) {
+                console.log(`Rate limit reached, waiting ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                return this.waitIfNeeded();
+            }
+        }
+        
+        // Record this request
+        this.requests.push(now);
+        return true;
+    }
+}
+
+class QuantCiteClientWithRateLimit {
+    constructor(apiKey, tier = 'basic') {
+        this.apiKey = apiKey;
+        
+        const rateLimits = {
+            basic: 600,
+            premium: 1200,
+            developer: 1000,
+            enterprise: 10000
+        };
+        
+        this.rateLimiter = new RateLimiter(rateLimits[tier] || 600);
+        this.ws = null;
+    }
+    
+    async sendMessage(message) {
+        await this.rateLimiter.waitIfNeeded();
+        
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(message));
+            return true;
+        }
+        return false;
+    }
+    
+    async subscribeWithRateLimit(symbols, exchanges = 'all') {
+        for (const symbol of symbols) {
+            const subscribeMsg = {
+                type: 'subscribe_aggregated',
+                symbol: symbol,
+                exchanges: exchanges
+            };
+            
+            await this.sendMessage(subscribeMsg);
+            console.log(`Subscribed to ${symbol}`);
+            
+            // Small delay between subscriptions
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    }
+}
+```
+
+## Data Usage Optimization
+
+### Efficient Subscription Management
+
+**Best Practices:**
+```python
+class DataUsageManager:
+    def __init__(self, client):
+        self.client = client
+        self.active_subscriptions = set()
+        self.usage_threshold = 45.0  # GB warning threshold
+    
+    async def subscribe_efficiently(self, symbols, exchanges=None):
+        """Subscribe only to needed symbols"""
+        for symbol in symbols:
+            if symbol not in self.active_subscriptions:
+                # Choose specific exchanges instead of 'all' to reduce data
+                selected_exchanges = exchanges or ['binance', 'okx', 'bybit']
+                await self.client.subscribe_to_symbol(symbol, selected_exchanges)
+                self.active_subscriptions.add(symbol)
+    
+    async def cleanup_unused_subscriptions(self, needed_symbols):
+        """Remove subscriptions for symbols no longer needed"""
+        unused = self.active_subscriptions - set(needed_symbols)
+        
+        for symbol in unused:
+            await self.client.unsubscribe_from_symbol(symbol)
+            self.active_subscriptions.remove(symbol)
+            print(f"Cleaned up unused subscription: {symbol}")
+    
+    async def check_usage_periodically(self):
+        """Periodically check data usage"""
+        while True:
+            try:
+                # Check usage via HTTP endpoint
+                usage_response = await self.get_usage_data()
+                
+                if usage_response:
+                    used_gb = usage_response.get('data_usage', {}).get('used_gb', 0)
+                    
+                    if used_gb > self.usage_threshold:
+                        print(f"Warning: High data usage {used_gb}GB")
+                        await self.optimize_subscriptions()
+                
+                await asyncio.sleep(3600)  # Check hourly
+                
+            except Exception as e:
+                print(f"Usage check failed: {e}")
+                await asyncio.sleep(300)  # Retry in 5 minutes
+    
+    async def optimize_subscriptions(self):
+        """Reduce subscriptions to conserve data"""
+        # Keep only the most important symbols
+        priority_symbols = ['BTC/USDT', 'ETH/USDT']
+        
+        symbols_to_remove = self.active_subscriptions - set(priority_symbols)
+        for symbol in symbols_to_remove:
+            await self.client.unsubscribe_from_symbol(symbol)
+            self.active_subscriptions.remove(symbol)
+```
+
+### Message Filtering
+
+**Filter High-Frequency Updates:**
+```python
+class MessageFilter:
+    def __init__(self, min_interval=1.0):
+        self.min_interval = min_interval  # Minimum seconds between updates
+        self.last_update = {}
+    
+    def should_process_update(self, symbol):
+        """Decide whether to process an orderbook update"""
+        now = time.time()
+        last = self.last_update.get(symbol, 0)
+        
+        if now - last >= self.min_interval:
+            self.last_update[symbol] = now
+            return True
+        
+        return False
+    
+    def handle_orderbook_update(self, data):
+        """Process orderbook update with filtering"""
+        symbol = data.get('symbol')
+        
+        if self.should_process_update(symbol):
+            # Process the update
+            stats = data.get('data', {}).get('market_stats', {})
+            print(f"{symbol}: {stats.get('best_bid')} / {stats.get('best_ask')}")
+        else:
+            # Skip this update to reduce processing load
+            pass
+```
+
+## Error Handling for Limits
+
+### Rate Limit Exceeded
+```python
+async def handle_rate_limit_error(self, error_data):
+    """Handle rate limit exceeded error"""
+    retry_after = error_data.get('retry_after', 60)
+    current_limit = error_data.get('current_limit', 600)
+    
+    print(f"Rate limit exceeded. Waiting {retry_after}s")
+    print(f"Current limit: {current_limit} requests/minute")
+    
+    await asyncio.sleep(retry_after)
+    
+    # Reduce request rate going forward
+    if hasattr(self, 'rate_limiter'):
+        self.rate_limiter.max_requests = int(current_limit * 0.9)  # 90% of limit
+```
+
+### Data Limit Exceeded
+```python
+async def handle_data_limit_error(self, error_data):
+    """Handle data limit exceeded error"""
+    usage = error_data.get('data_usage', {})
+    used_gb = usage.get('used_gb', 0)
+    limit_gb = usage.get('limit_gb', 50)
+    
+    print(f"Data limit exceeded: {used_gb}GB / {limit_gb}GB")
+    
+    # Unsubscribe from all non-essential symbols
+    essential_symbols = ['BTC/USDT']  # Keep only most important
+    
+    for symbol in list(self.subscriptions):
+        if symbol not in essential_symbols:
+            await self.unsubscribe_from_symbol(symbol)
+    
+    print("Reduced subscriptions to conserve data")
+```
+
+## Monitoring Dashboard
+
+### Usage Tracking Script
+```python
+import requests
+import time
+import json
+
+class UsageMonitor:
+    def __init__(self, api_key, base_url="http://localhost:8000"):
+        self.api_key = api_key
+        self.base_url = base_url
+    
+    def get_usage_stats(self):
+        """Get current usage statistics"""
+        try:
+            url = f"{self.base_url}/api/v1/data-usage/{self.api_key}"
+            response = requests.get(url)
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"Error getting usage stats: {response.status_code}")
+                return None
+                
+        except Exception as e:
+            print(f"Failed to get usage stats: {e}")
+            return None
+    
+    def print_usage_report(self):
+        """Print formatted usage report"""
+        stats = self.get_usage_stats()
+        if not stats:
+            return
+        
+        usage = stats.get('data_usage', {})
+        billing = stats.get('billing_period', {})
+        
+        print("\n" + "="*50)
+        print("QUANTCITE DATA USAGE REPORT")
+        print("="*50)
+        print(f"Tier: {stats.get('billing_tier', 'unknown').upper()}")
+        print(f"API Key Status: {stats.get('status', {}).get('api_key_status', 'unknown')}")
+        print(f"\nData Usage:")
+        print(f"  Used: {usage.get('used_gb', 0):.2f} GB")
+        print(f"  Limit: {usage.get('limit_gb', 50)} GB")
+        print(f"  Remaining: {usage.get('remaining_gb', 0):.2f} GB")
+        print(f"  Usage: {usage.get('usage_percentage', 0):.1f}%")
+        print(f"\nBilling Period:")
+        print(f"  Reset Date: {billing.get('reset_date', 'unknown')}")
+        print(f"  Days Until Reset: {billing.get('days_until_reset', 'unknown')}")
+        print("="*50 + "\n")
+
+# Usage
+monitor = UsageMonitor("demo_key_123")
+monitor.print_usage_report()
+```
+
+## Best Practices Summary
+
+<CardGroup cols={2}>
+  <Card title="Rate Limiting" icon="gauge-high">
+    - Implement client-side rate limiting
+    - Handle rate limit errors gracefully
+    - Use exponential backoff for retries
+    - Monitor your tier limits
+  </Card>
+  
+  <Card title="Data Conservation" icon="database">
+    - Subscribe only to needed symbols
+    - Use specific exchanges vs "all"
+    - Unsubscribe from unused pairs
+    - Monitor usage regularly
+  </Card>
+  
+  <Card title="Error Handling" icon="shield">
+    - Handle limit exceeded errors
+    - Implement automatic cleanup
+    - Log all limit warnings
+    - Plan for monthly resets
+  </Card>
+  
+  <Card title="Monitoring" icon="chart-line">
+    - Check usage via HTTP endpoint
+    - Set up automated alerts
+    - Track usage trends
+    - Plan capacity needs
+  </Card>
+</CardGroup>
+
+<Warning>
+  Always monitor your data usage and implement proper rate limiting to avoid service interruptions. The 50GB monthly limit applies to all data received via WebSocket.
+</Warning>

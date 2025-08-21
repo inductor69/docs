@@ -1,0 +1,336 @@
+---
+title: "WebSocket Subscriptions"
+description: "Subscribe to real-time orderbook data from multiple exchanges"
+---
+
+## Subscribe to Aggregated Orderbook
+
+Subscribe to real-time orderbook updates for specific trading pairs across multiple exchanges.
+
+### Subscribe to Specific Exchanges
+
+**Request:**
+```json
+{
+  "type": "subscribe_aggregated",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin"]
+}
+```
+
+**Success Response:**
+```json
+{
+  "type": "aggregated_subscription_response",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin"],
+  "requested": ["binance", "okx", "bybit", "kucoin"],
+  "success": true,
+  "message": "Subscribed to BTC/USDT on 4 exchanges",
+  "subscription_id": "sub_123456"
+}
+```
+
+### Subscribe to All Available Exchanges
+
+**Request:**
+```json
+{
+  "type": "subscribe_aggregated",
+  "symbol": "BTC/USDT",
+  "exchanges": "all"
+}
+```
+
+**Success Response:**
+```json
+{
+  "type": "aggregated_subscription_response",
+  "symbol": "BTC/USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin", "gate", "mexc", "bitget", "cryptocom"],
+  "requested": "all",
+  "success": true,
+  "message": "Subscribed to BTC/USDT on 25 exchanges",
+  "subscription_id": "sub_789012"
+}
+```
+
+## Real-time Orderbook Updates
+
+Once subscribed, you'll receive continuous orderbook updates:
+
+```json
+{
+  "type": "aggregated_orderbook_update",
+  "symbol": "BTC/USDT",
+  "timestamp": "2025-08-19T19:45:13.392607",
+  "update_number": 1,
+  "subscription_id": "sub_123456",
+  "data": {
+    "bids": [
+      {
+        "price": 113393.9,
+        "amount": 0.0001,
+        "exchanges": ["bybit"],
+        "exchange_count": 1,
+        "value": 11.33939
+      },
+      {
+        "price": 113390.0,
+        "amount": 0.0025,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 283.475
+      }
+    ],
+    "asks": [
+      {
+        "price": 113400.0,
+        "amount": 0.0005,
+        "exchanges": ["binance", "okx"],
+        "exchange_count": 2,
+        "value": 56.7
+      },
+      {
+        "price": 113405.5,
+        "amount": 0.0015,
+        "exchanges": ["kucoin"],
+        "exchange_count": 1,
+        "value": 170.1083
+      }
+    ],
+    "market_stats": {
+      "best_bid": 113393.9,
+      "best_ask": 113400.0,
+      "spread": 6.1,
+      "spread_percent": 0.0054,
+      "mid_price": 113396.95,
+      "total_bid_volume": 0.0026,
+      "total_ask_volume": 0.002,
+      "participating_exchanges": 4
+    }
+  }
+}
+```
+
+## Subscription Management
+
+### Get Current Orderbook Snapshot
+
+Request the current orderbook state for an active subscription:
+
+**Request:**
+```json
+{
+  "type": "get_aggregated_orderbook",
+  "symbol": "BTC/USDT"
+}
+```
+
+**Response:**
+```json
+{
+  "type": "aggregated_orderbook_data",
+  "symbol": "BTC/USDT",
+  "timestamp": "2025-08-19T19:45:13.392607",
+  "data": {
+    "bids": [...],
+    "asks": [...],
+    "market_stats": {
+      "best_bid": 113393.9,
+      "best_ask": 113400.0,
+      "spread": 6.1,
+      "spread_percent": 0.0054,
+      "mid_price": 113396.95
+    }
+  }
+}
+```
+
+### Unsubscribe from Symbol
+
+Stop receiving updates for a specific trading pair:
+
+**Request:**
+```json
+{
+  "type": "unsubscribe_aggregated",
+  "symbol": "BTC/USDT"
+}
+```
+
+**Response:**
+```json
+{
+  "type": "unsubscribe_response",
+  "symbol": "BTC/USDT",
+  "success": true,
+  "message": "Successfully unsubscribed from BTC/USDT"
+}
+```
+
+## Subscription Errors
+
+### Invalid Symbol
+```json
+{
+  "type": "subscription_error",
+  "error": "invalid_symbol",
+  "message": "Symbol BTC/INVALID is not supported",
+  "symbol": "BTC/INVALID",
+  "suggested_symbols": ["BTC/USDT", "BTC/USD", "BTC/EUR"]
+}
+```
+
+### Exchange Not Available
+```json
+{
+  "type": "subscription_error",
+  "error": "exchange_unavailable",
+  "message": "Exchange 'invalid_exchange' is not supported",
+  "exchange": "invalid_exchange",
+  "supported_exchanges": ["binance", "okx", "bybit", "kucoin"]
+}
+```
+
+### No Active Subscription
+```json
+{
+  "type": "error",
+  "error": "no_subscription",
+  "message": "No active subscription found for BTC/USDT",
+  "symbol": "BTC/USDT"
+}
+```
+
+## Data Structure
+
+### Orderbook Entry
+
+Each bid/ask entry contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `price` | number | Order price level |
+| `amount` | number | Total amount at this price |
+| `exchanges` | array | List of exchanges contributing |
+| `exchange_count` | number | Number of exchanges |
+| `value` | number | Price × Amount |
+
+### Market Statistics
+
+Real-time market statistics included with each update:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `best_bid` | number | Highest bid price |
+| `best_ask` | number | Lowest ask price |
+| `spread` | number | Bid-ask spread |
+| `spread_percent` | number | Spread as percentage |
+| `mid_price` | number | (best_bid + best_ask) / 2 |
+| `total_bid_volume` | number | Total bid volume |
+| `total_ask_volume` | number | Total ask volume |
+| `participating_exchanges` | number | Active exchanges count |
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Subscription Management" icon="list">
+    - Subscribe only to needed symbols
+    - Unsubscribe from unused pairs
+    - Monitor subscription count
+    - Handle subscription errors gracefully
+  </Card>
+  
+  <Card title="Data Processing" icon="cpu">
+    - Process updates efficiently
+    - Implement proper buffering
+    - Handle high-frequency updates
+    - Monitor memory usage
+  </Card>
+</CardGroup>
+
+## Code Examples
+
+### Python Subscription Manager
+```python
+import asyncio
+import websockets
+import json
+
+class SubscriptionManager:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.websocket = None
+        self.subscriptions = set()
+    
+    async def subscribe(self, symbol, exchanges="all"):
+        if not self.websocket:
+            await self.connect()
+        
+        subscribe_msg = {
+            "type": "subscribe_aggregated",
+            "symbol": symbol,
+            "exchanges": exchanges
+        }
+        
+        await self.websocket.send(json.dumps(subscribe_msg))
+        self.subscriptions.add(symbol)
+        print(f"Subscribed to {symbol}")
+    
+    async def unsubscribe(self, symbol):
+        if symbol not in self.subscriptions:
+            print(f"Not subscribed to {symbol}")
+            return
+        
+        unsubscribe_msg = {
+            "type": "unsubscribe_aggregated",
+            "symbol": symbol
+        }
+        
+        await self.websocket.send(json.dumps(unsubscribe_msg))
+        self.subscriptions.remove(symbol)
+        print(f"Unsubscribed from {symbol}")
+```
+
+### JavaScript Subscription Handler
+```javascript
+class SubscriptionHandler {
+    constructor(websocket) {
+        this.ws = websocket;
+        this.subscriptions = new Set();
+    }
+    
+    subscribe(symbol, exchanges = 'all') {
+        const subscribeMsg = {
+            type: 'subscribe_aggregated',
+            symbol: symbol,
+            exchanges: exchanges
+        };
+        
+        this.ws.send(JSON.stringify(subscribeMsg));
+        this.subscriptions.add(symbol);
+        console.log(`Subscribed to ${symbol}`);
+    }
+    
+    unsubscribe(symbol) {
+        if (!this.subscriptions.has(symbol)) {
+            console.log(`Not subscribed to ${symbol}`);
+            return;
+        }
+        
+        const unsubscribeMsg = {
+            type: 'unsubscribe_aggregated',
+            symbol: symbol
+        };
+        
+        this.ws.send(JSON.stringify(unsubscribeMsg));
+        this.subscriptions.delete(symbol);
+        console.log(`Unsubscribed from ${symbol}`);
+    }
+}
+```
+
+<Warning>
+  Each subscription consumes data from your 50GB monthly limit. Monitor your usage and unsubscribe from unused symbols to conserve data.
+</Warning>
