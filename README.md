@@ -30,12 +30,13 @@ View your local preview at `http://localhost:3000`.
 
 ## API Overview
 
-- **Base URL:** `http://localhost:8000`
-- **WebSocket:** `ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY`
+- **Base URL:** `https://data.quantcite.com`
+- **WebSocket:** `wss://data.quantcite.com/api/v1/ws`
 - **Data Limit:** 50GB per API key per month
-- **Exchanges:** 35+ active cryptocurrency exchanges
+- **Exchanges:** 20+ active cryptocurrency exchanges
 - **Trading Pairs:** 40,747+ supported pairs
 - **Rate Limits:** 600-10,000 requests/minute (tier-based)
+- **Security:** SSL/TLS encryption with secure WebSocket connections
 
 ## Quick Start
 

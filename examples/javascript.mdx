@@ -12,11 +12,11 @@ const WebSocket = require('ws');
 const EventEmitter = require('events');
 
 class QuantCiteClient extends EventEmitter {
-    constructor(apiKey, baseUrl = 'localhost:8000') {
+    constructor(apiKey, baseUrl = 'data.quantcite.com') {
         super();
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
-        this.uri = `ws://${baseUrl}/api/v1/ws?api_key=${apiKey}`;
+        this.uri = `wss://${baseUrl}/api/v1/ws`;
         this.ws = null;
         this.authenticated = false;
         this.subscriptions = new Set();
@@ -631,9 +631,9 @@ For browser usage, create a simplified version without Node.js dependencies:
 
 ```javascript
 class QuantCiteBrowserClient {
-    constructor(apiKey, baseUrl = 'localhost:8000') {
+    constructor(apiKey, baseUrl = 'data.quantcite.com') {
         this.apiKey = apiKey;
-        this.uri = `ws://${baseUrl}/api/v1/ws?api_key=${apiKey}`;
+        this.uri = `wss://${baseUrl}/api/v1/ws`;
         this.ws = null;
         this.authenticated = false;
         this.callbacks = {};

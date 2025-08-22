@@ -24,10 +24,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class QuantCiteClient:
-    def __init__(self, api_key, base_url="localhost:8000"):
+    def __init__(self, api_key, base_url="data.quantcite.com"):
         self.api_key = api_key
         self.base_url = base_url
-        self.uri = f"ws://{base_url}/api/v1/ws?api_key={api_key}"
+        self.uri = f"wss://{base_url}/api/v1/ws"
         self.websocket = None
         self.authenticated = False
         self.subscriptions = set()

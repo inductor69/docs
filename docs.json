@@ -64,8 +64,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://www.quantcite.com/logo/quantcite.svg",
+    "dark": "https://www.quantcite.com/logo/quantcite.svg"
   },
   "navbar": {
     "links": [

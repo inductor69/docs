@@ -21,7 +21,7 @@ QuantCite uses tier-based rate limiting to ensure fair usage across all users:
 Monitor your data consumption via HTTP endpoint:
 
 ```bash
-curl "http://localhost:8000/api/v1/data-usage/demo_key_123"
+curl "https://data.quantcite.com/api/v1/data-usage/demo_key_123"
 ```
 
 **Response:**
@@ -380,7 +380,7 @@ import time
 import json
 
 class UsageMonitor:
-    def __init__(self, api_key, base_url="http://localhost:8000"):
+    def __init__(self, api_key, base_url="https://data.quantcite.com"):
         self.api_key = api_key
         self.base_url = base_url
     
