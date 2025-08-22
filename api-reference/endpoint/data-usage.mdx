@@ -1,6 +1,6 @@
 ---
 title: "Monitor Data Usage"
-api: "GET http://localhost:8000/api/v1/data-usage/{api_key}"
+api: "GET https://data.quantcite.com/api/v1/data-usage/{api_key}"
 description: "Monitor your current data usage and limits"
 ---
 
@@ -103,12 +103,12 @@ Monitor your current data usage and limits for your API key. This endpoint provi
 <RequestExample>
 
 ```bash cURL
-curl "http://localhost:8000/api/v1/data-usage/demo_key_123"
+curl "https://data.quantcite.com/api/v1/data-usage/demo_key_123"
 ```
 
 ```javascript JavaScript
 const apiKey = 'demo_key_123';
-const response = await fetch(`http://localhost:8000/api/v1/data-usage/${apiKey}`);
+const response = await fetch(`https://data.quantcite.com/api/v1/data-usage/${apiKey}`);
 const usageData = await response.json();
 
 console.log(`Usage: ${usageData.data_usage.used_gb}GB / ${usageData.data_usage.limit_gb}GB`);
@@ -119,7 +119,7 @@ console.log(`Remaining: ${usageData.data_usage.remaining_gb}GB`);
 import requests
 
 api_key = "demo_key_123"
-response = requests.get(f"http://localhost:8000/api/v1/data-usage/{api_key}")
+response = requests.get(f"https://data.quantcite.com/api/v1/data-usage/{api_key}")
 usage_data = response.json()
 
 print(f"Tier: {usage_data['billing_tier']}")
@@ -178,7 +178,7 @@ import time
 
 def monitor_usage(api_key, threshold=40.0):
     """Monitor data usage and alert when threshold is reached"""
-    response = requests.get(f"http://localhost:8000/api/v1/data-usage/{api_key}")
+    response = requests.get(f"https://data.quantcite.com/api/v1/data-usage/{api_key}")
     
     if response.status_code == 200:
         data = response.json()
@@ -200,7 +200,7 @@ while True:
 ### Usage Dashboard
 ```javascript
 async function createUsageDashboard(apiKey) {
-    const response = await fetch(`http://localhost:8000/api/v1/data-usage/${apiKey}`);
+    const response = await fetch(`https://data.quantcite.com/api/v1/data-usage/${apiKey}`);
     const data = await response.json();
     
     const usage = data.data_usage;

@@ -5,7 +5,7 @@ description: "Connect to QuantCite's real-time cryptocurrency data in minutes"
 
 ## Get started in three steps
 
-Connect to our WebSocket API and start receiving real-time orderbook data from 35+ exchanges.
+Connect to our secure WebSocket API and start receiving real-time orderbook data from 20+ exchanges with SSL/TLS encryption.
 
 ### Step 1: Get your API key
 
@@ -15,14 +15,14 @@ Connect to our WebSocket API and start receiving real-time orderbook data from 3
     - **50GB monthly data limit**
     - **WebSocket-only connections** 
     - **Real-time orderbook updates**
-    - **35+ active exchanges**
+    - **20+ active exchanges**
     
     Your API key will be in the format: `demo_key_123`
   </Accordion>
   <Accordion icon="chart-line" title="Monitor your usage">
     Track your data consumption in real-time:
     ```bash
-    curl "http://localhost:8000/api/v1/data-usage/YOUR_API_KEY"
+    curl "https://data.quantcite.com/api/v1/data-usage/YOUR_API_KEY"
     ```
     
     <Tip>Monitor usage regularly to avoid hitting the 50GB monthly limit.</Tip>
@@ -32,13 +32,13 @@ Connect to our WebSocket API and start receiving real-time orderbook data from 3
 ### Step 2: Connect to WebSocket
 
 <AccordionGroup>
-  <Accordion icon="wifi" title="Establish WebSocket connection">
-    Connect to our WebSocket endpoint with your API key:
+  <Accordion icon="wifi" title="Establish secure WebSocket connection">
+    Connect to our secure WebSocket endpoint:
     ```
-    ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+    wss://data.quantcite.com/api/v1/ws
     ```
     
-    The connection will automatically authenticate using the API key in the query parameter.
+    **Note:** Authentication is now done via WebSocket message, not URL parameter for enhanced security.
   </Accordion>
   <Accordion icon="handshake" title="Authenticate your session">
     After connecting, send an authentication message:
@@ -49,7 +49,7 @@ Connect to our WebSocket API and start receiving real-time orderbook data from 3
     }
     ```
     
-    You'll receive a confirmation with your usage statistics and tier information.
+    You'll receive a welcome message with session ID and tier information.
   </Accordion>
 </AccordionGroup>
 

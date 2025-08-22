@@ -9,10 +9,12 @@ Authentication happens in two steps: connection-level authentication via query p
 
 ### Connection Authentication
 
-Your API key is included in the WebSocket URL:
+Connect to the secure WebSocket endpoint without API key in URL:
 ```
-ws://localhost:8000/api/v1/ws?api_key=demo_key_123
+wss://data.quantcite.com/api/v1/ws
 ```
+
+**Security Enhancement:** API keys are no longer exposed in URLs for better security.
 
 ### Session Authentication
 
@@ -29,20 +31,14 @@ After connecting, send an authentication message to establish your session:
 **Success Response:**
 ```json
 {
-  "type": "authentication_success",
+  "type": "welcome",
+  "session_id": "860a5a96-0da4-4154-9d13-a79d07121758",
   "user_id": "cb88461f-421a-4ac8-9722-afe248a40ae6",
-  "tier": "premium",
-  "message": "Authentication successful",
-  "data_usage": {
-    "used_gb": 12.5,
-    "limit_gb": 50.0,
-    "remaining_gb": 37.5,
-    "usage_percentage": 25.0
-  },
-  "rate_limits": {
-    "requests_per_minute": 1200,
-    "monthly_message_limit": 100000,
-    "max_connections": 20
+  "user_tier": "premium",
+  "message": "Authenticated successfully as premium user",
+  "authentication": {
+    "api_key": "demo_key...",
+    "status": "authenticated"
   }
 }
 ```
@@ -52,9 +48,9 @@ After connecting, send an authentication message to establish your session:
 ### Invalid API Key
 ```json
 {
-  "type": "authentication_error",
-  "error": "invalid_api_key",
-  "message": "The provided API key is invalid or expired"
+  "type": "error",
+  "error": "Authentication failed",
+  "code": 4001
 }
 ```
 
@@ -140,7 +136,7 @@ import websockets
 import json
 
 async def authenticate():
-    uri = "ws://localhost:8000/api/v1/ws?api_key=demo_key_123"
+    uri = "wss://data.quantcite.com/api/v1/ws"
     
     async with websockets.connect(uri) as websocket:
         # Send authentication message
@@ -154,12 +150,12 @@ async def authenticate():
         response = await websocket.recv()
         auth_data = json.loads(response)
         
-        if auth_data.get("type") == "authentication_success":
+        if auth_data.get("type") == "welcome":
             print(f"Authenticated as user: {auth_data['user_id']}")
-            print(f"Tier: {auth_data['tier']}")
-            print(f"Data usage: {auth_data['data_usage']['used_gb']}GB / {auth_data['data_usage']['limit_gb']}GB")
+            print(f"Session ID: {auth_data['session_id']}")
+            print(f"Tier: {auth_data['user_tier']}")
         else:
-            print(f"Authentication failed: {auth_data['message']}")
+            print(f"Authentication failed: {auth_data['error']}")
 
 asyncio.run(authenticate())
 ```
@@ -168,7 +164,7 @@ asyncio.run(authenticate())
 ```javascript
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://localhost:8000/api/v1/ws?api_key=demo_key_123');
+const ws = new WebSocket('wss://data.quantcite.com/api/v1/ws');
 
 ws.on('open', () => {
     // Send authentication message
@@ -182,12 +178,12 @@ ws.on('open', () => {
 ws.on('message', (data) => {
     const message = JSON.parse(data.toString());
     
-    if (message.type === 'authentication_success') {
+    if (message.type === 'welcome') {
         console.log(`Authenticated as user: ${message.user_id}`);
-        console.log(`Tier: ${message.tier}`);
-        console.log(`Data usage: ${message.data_usage.used_gb}GB / ${message.data_usage.limit_gb}GB`);
-    } else if (message.type === 'authentication_error') {
-        console.error(`Authentication failed: ${message.message}`);
+        console.log(`Session ID: ${message.session_id}`);
+        console.log(`Tier: ${message.user_tier}`);
+    } else if (message.type === 'error') {
+        console.error(`Authentication failed: ${message.error}`);
     }
 });
 ```

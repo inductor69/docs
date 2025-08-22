@@ -7,29 +7,36 @@ description: "Complete HTTP and WebSocket API reference for QuantCite Data Pipel
 
 The QuantCite Data Pipeline provides real-time cryptocurrency market data through a combination of HTTP endpoints and WebSocket connections. The API is designed for **WebSocket-only** data streaming with HTTP endpoints available for health checks and usage monitoring.
 
-## Base URL
+## Base URL (Production)
+
+```
+https://data.quantcite.com
+```
+
+## WebSocket URL (Production)
+
+```
+wss://data.quantcite.com/api/v1/ws
+```
+
+## Local Development
 
 ```
 http://localhost:8000
-```
-
-## WebSocket URL
-
-```
-ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+ws://localhost:8000/api/v1/ws
 ```
 
 ## Authentication
 
 All API access requires a valid API key:
 - **HTTP Endpoints**: API key as path parameter or query parameter
-- **WebSocket**: API key in connection URL and authentication message
+- **WebSocket**: API key in authentication message (not in URL for security)
 
 ## API Features
 
 <CardGroup cols={2}>
   <Card title="Real-time Streaming" icon="wifi">
-    WebSocket-based orderbook updates from 35+ exchanges with sub-second latency.
+    WebSocket-based orderbook updates from 20+ exchanges with sub-second latency and SSL security.
   </Card>
   
   <Card title="50GB Data Limit" icon="database">
@@ -49,7 +56,7 @@ All API access requires a valid API key:
 
 ### Exchanges
 - **Total Supported**: 42 exchanges
-- **Active Exchanges**: 35 exchanges  
+- **Active Exchanges**: 20 exchanges  
 - **Major Exchanges**: Binance, OKX, Bybit, KuCoin, Gate.io, MEXC, Bitget, Crypto.com
 
 ### Trading Pairs
@@ -113,5 +120,5 @@ All API access requires a valid API key:
 ## System Statistics
 
 <Info>
-  **35 Active Exchanges** • **40,747+ Trading Pairs** • **50GB Monthly Limit** • **Sub-second Latency** • **99.9% Uptime**
+  **20 Active Exchanges** • **40,747+ Trading Pairs** • **50GB Monthly Limit** • **SSL/WSS Security** • **Sub-second Latency** • **99.9% Uptime**
 </Info>

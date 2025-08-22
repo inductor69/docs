@@ -3,22 +3,28 @@ title: "WebSocket Connection"
 description: "How to establish and maintain WebSocket connections to QuantCite"
 ---
 
-## Connection URL
+## Connection URLs
 
-Connect to the QuantCite WebSocket endpoint using your API key:
+### Production (SSL/TLS Secure)
+```
+wss://data.quantcite.com/api/v1/ws
+```
 
+### Local Development
 ```
-ws://localhost:8000/api/v1/ws?api_key=YOUR_API_KEY
+ws://localhost:8000/api/v1/ws
 ```
+
+**Important:** Authentication is done via WebSocket message, not URL parameter for enhanced security.
 
 ## Connection Flow
 
 <Steps>
   <Step title="Establish Connection">
-    Connect to the WebSocket endpoint with your API key in the query parameter.
+    Connect to the secure WebSocket endpoint (no API key in URL).
     
     ```javascript
-    const ws = new WebSocket('ws://localhost:8000/api/v1/ws?api_key=demo_key_123');
+    const ws = new WebSocket('wss://data.quantcite.com/api/v1/ws');
     ```
   </Step>
   
@@ -91,7 +97,7 @@ Common connection issues and solutions:
     
     **Solution:** Verify your API key is valid and active
     ```bash
-    curl "http://localhost:8000/api/v1/data-usage/YOUR_API_KEY"
+    curl "https://data.quantcite.com/api/v1/data-usage/YOUR_API_KEY"
     ```
   </Accordion>
   
