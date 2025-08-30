@@ -2,7 +2,7 @@
 
 Real-time cryptocurrency market data through WebSocket connections with 50GB monthly data limits.
 
-This documentation site provides comprehensive guides and API reference for integrating with the QuantCite Data Pipeline, which aggregates orderbook data from 35+ active exchanges.
+This documentation site provides comprehensive guides and API reference for integrating with the QuantCite Data Pipeline, which aggregates orderbook data from 52+ active exchanges across 70+ supported platforms.
 
 ## Features
 
@@ -33,8 +33,8 @@ View your local preview at `http://localhost:3000`.
 - **Base URL:** `https://data.quantcite.com`
 - **WebSocket:** `wss://data.quantcite.com/api/v1/ws`
 - **Data Limit:** 50GB per API key per month
-- **Exchanges:** 20+ active cryptocurrency exchanges
-- **Trading Pairs:** 40,747+ supported pairs
+- **Exchanges:** 52+ active exchanges across 70+ supported platforms
+- **Trading Pairs:** 50,000+ supported pairs
 - **Rate Limits:** 600-10,000 requests/minute (tier-based)
 - **Security:** SSL/TLS encryption with secure WebSocket connections
 

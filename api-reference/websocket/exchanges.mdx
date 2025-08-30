@@ -27,30 +27,38 @@ Request information about all supported exchanges in the QuantCite system.
   "type": "exchanges_data",
   "data": {
     "supported_exchanges": [
-      "binance", "okx", "bybit", "kucoin", "gate", "mexc", 
-      "bitget", "cryptocom", "huobi", "coinbase", "kraken"
+      "alpaca", "apex", "ascendex", "bequant", "binance", "binancecoinm",
+      "binanceus", "binanceusdm", "bingx", "bitfinex", "bitget", "bithumb",
+      "bitmart", "bitmex", "bitopro", "bitrue", "bitstamp", "bittrade",
+      "bitvavo", "blockchaincom", "blofin", "bybit", "cex", "coinbase",
+      "coinbaseadvanced", "coinbaseexchange", "coinbaseinternational", "coincatch",
+      "coincheck", "coinex", "coinone", "cryptocom", "defx", "deribit",
+      "derive", "exmo", "gate", "gateio", "gemini", "hashkey", "hitbtc",
+      "hollaex", "htx", "huobi", "hyperliquid", "independentreserve", "kraken",
+      "krakenfutures", "kucoin", "kucoinfutures", "lbank", "luno", "mexc",
+      "modetrade", "myokx", "ndax", "okcoin", "okx", "okxus", "onetrading",
+      "oxfun", "p2b", "paradex", "phemex", "poloniex", "probit", "tradeogre",
+      "upbit", "vertex", "whitebit", "woo", "woofipro", "xt"
     ],
     "active_exchanges": [
-      "binance", "bybit", "kucoin", "gate", "mexc", 
-      "bitget", "cryptocom", "huobi", "coinbase"
+      "binance", "bybit", "kucoin", "gate", "mexc", "bitget", "cryptocom",
+      "huobi", "coinbase", "kraken", "okx", "bitfinex", "poloniex", "whitebit",
+      "woo", "deribit", "ascendex", "bequant", "binanceus", "bitmex"
     ],
-    "total_supported": 42,
-    "total_active": 35,
+    "total_supported": 70,
+    "total_active": 52,
     "exchange_status": {
       "binance": "active",
-      "okx": "active", 
+      "okx": "active",
       "bybit": "active",
-      "kucoin": "active",
-      "gate": "active",
-      "mexc": "active",
-      "bitget": "active",
-      "cryptocom": "active",
-      "huobi": "active",
+      "kraken": "active",
       "coinbase": "active",
-      "kraken": "maintenance"
+      "gate": "active",
+      "kucoin": "active",
+      "mexc": "active"
     }
   },
-  "timestamp": "2025-08-19T20:45:13.392607"
+  "timestamp": "2025-08-29T21:08:53.451737"
 }
 ```
 
@@ -81,9 +89,9 @@ Request information about all supported exchanges in the QuantCite system.
 | `exchange_status` | object | Map of exchange names to their current status |
 | `timestamp` | string | ISO 8601 timestamp when the data was retrieved |
 
-## Supported Exchanges
+## Supported Exchange Categories
 
-### Tier 1 Exchanges (Highest Volume)
+### Major Exchanges (Tier 1)
 
 <CardGroup cols={2}>
   <Card title="Binance" icon="building-columns">
@@ -92,40 +100,54 @@ Request information about all supported exchanges in the QuantCite system.
     **Volume:** Highest global volume
   </Card>
   
+  <Card title="Coinbase" icon="building-columns">
+    **Status:** Active  
+    **Pairs:** 500+  
+    **Volume:** Leading US exchange
+  </Card>
+  
   <Card title="OKX" icon="building-columns">
     **Status:** Active  
     **Pairs:** 2,400+  
     **Volume:** Major global exchange
   </Card>
   
-  <Card title="Bybit" icon="building-columns">
+  <Card title="Kraken" icon="building-columns">
     **Status:** Active  
-    **Pairs:** 1,800+  
-    **Volume:** Leading derivatives exchange
-  </Card>
-  
-  <Card title="KuCoin" icon="building-columns">
-    **Status:** Active  
-    **Pairs:** 2,200+  
-    **Volume:** Wide altcoin selection
+    **Pairs:** 200+  
+    **Volume:** Security-focused exchange
   </Card>
 </CardGroup>
 
-### Tier 2 Exchanges (High Volume)
+### Futures & Derivatives Platforms
 
-- **Gate.io** - Comprehensive altcoin coverage
-- **MEXC** - Emerging tokens and high volume
-- **Bitget** - Copy trading and derivatives
-- **Crypto.com** - Major retail exchange
-- **Huobi Global** - Established global exchange
-- **Coinbase Pro** - US-regulated exchange
+- **Bybit** - Leading derivatives exchange
+- **Deribit** - Options and futures specialist
+- **Binance Futures** - Comprehensive futures trading
+- **OKX Futures** - Advanced derivatives platform
+- **KuCoin Futures** - Perpetual contracts
+- **Kraken Futures** - Regulated derivatives
 
-### Tier 3 Exchanges (Medium Volume)
+### US-Based Exchanges
 
-- **Kraken** - Security-focused exchange
-- **Bitfinex** - Professional trading features
-- **Gemini** - US-regulated, institutional focus
-- **Bitstamp** - Established European exchange
+- **Coinbase** - Premier US cryptocurrency exchange
+- **Kraken** - US-regulated with advanced features
+- **Gemini** - Institutional-grade security
+- **Independent Reserve** - Australian-based platform
+
+### Asian Exchanges
+
+- **Huobi (HTX)** - Major Asian platform
+- **Bithumb** - Leading Korean exchange
+- **Upbit** - Korean retail exchange
+- **Bitfinex** - Professional trading platform
+
+### Emerging & DeFi Platforms
+
+- **Hyperliquid** - On-chain derivatives
+- **Vertex** - Decentralized exchange
+- **Paradex** - Institutional DeFi platform
+- **OxFun** - Emerging derivatives platform
 
 ## Exchange Categories
 
