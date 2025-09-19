@@ -56,4 +56,4 @@ View your local preview at `http://localhost:3000`.
 - [Quick Start Guide](/quickstart)
 - [WebSocket Messages](/websocket/messages)
 - [API Reference](/api-reference/introduction)
-- [Client Examples](/examples/python)
+- [Client Examples](/examples/python) 
