@@ -39,7 +39,7 @@ async def connect_and_authenticate():
         # Send authentication message
         auth_message = {
             "type": "authenticate",
-            "api_key": "demo_key_123"
+            "api_key": "YOUR_API_KEY"
         }
         await websocket.send(json.dumps(auth_message))
         
@@ -69,7 +69,7 @@ ws.on('open', () => {
     // Authenticate
     const authMessage = {
         type: 'authenticate',
-        api_key: 'demo_key_123'
+        api_key: 'YOUR_API_KEY'
     };
     
     ws.send(JSON.stringify(authMessage));
@@ -92,7 +92,7 @@ ws.on('message', (data) => {
 ```json
 {
   "type": "authenticate",
-  "api_key": "demo_key_123"
+  "api_key": "YOUR_API_KEY"
 }
 ```
 
@@ -386,7 +386,7 @@ class UnifiedTransactionClient:
 
 async def main():
     # Initialize client
-    client = UnifiedTransactionClient("demo_key_123")
+    client = UnifiedTransactionClient("YOUR_API_KEY")
     
     # Connect and authenticate
     if await client.connect():
@@ -509,7 +509,7 @@ class UnifiedTransactionClient {
 
 // Usage
 async function main() {
-    const client = new UnifiedTransactionClient('demo_key_123');
+    const client = new UnifiedTransactionClient('YOUR_API_KEY');
     
     try {
         await client.connect();

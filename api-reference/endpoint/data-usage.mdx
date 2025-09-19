@@ -103,11 +103,11 @@ Monitor your current data usage and limits for your API key. This endpoint provi
 <RequestExample>
 
 ```bash cURL
-curl "https://data.quantcite.com/api/v1/data-usage/demo_key_123"
+curl "https://data.quantcite.com/api/v1/data-usage/YOUR_API_KEY"
 ```
 
 ```javascript JavaScript
-const apiKey = 'demo_key_123';
+const apiKey = 'YOUR_API_KEY';
 const response = await fetch(`https://data.quantcite.com/api/v1/data-usage/${apiKey}`);
 const usageData = await response.json();
 
@@ -118,7 +118,7 @@ console.log(`Remaining: ${usageData.data_usage.remaining_gb}GB`);
 ```python Python
 import requests
 
-api_key = "demo_key_123"
+api_key = "YOUR_API_KEY"
 response = requests.get(f"https://data.quantcite.com/api/v1/data-usage/{api_key}")
 usage_data = response.json()
 
