@@ -8,60 +8,62 @@
     "dark": "#1E3A8A"
   },
   "favicon": "/favicon.svg",
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "index",
-        "quickstart"
-      ]
-    },
-    {
-      "group": "Public HTTP Endpoints",
-      "pages": [
-        "api-reference/introduction",
-        "api-reference/endpoint/root",
-        "api-reference/endpoint/health",
-        "api-reference/endpoint/data-usage"
-      ]
-    },
-    {
-      "group": "Unified Transaction APIs",
-      "pages": [
-        "api-reference/unified/overview",
-        "api-reference/unified/authentication",
-        "api-reference/unified/transactions",
-        "api-reference/unified/websocket",
-        "api-reference/unified/exchanges"
-      ]
-    },
-    {
-      "group": "WebSocket Streaming",
-      "pages": [
-        "websocket/connection",
-        "websocket/authentication",
-        "websocket/subscriptions",
-        "websocket/messages"
-      ]
-    },
-    {
-      "group": "WebSocket API Reference",
-      "pages": [
-        "api-reference/websocket/subscribe",
-        "api-reference/websocket/orderbook",
-        "api-reference/websocket/exchanges",
-        "api-reference/websocket/pairs"
-      ]
-    },
-    {
-      "group": "Client Examples",
-      "pages": [
-        "examples/python",
-        "examples/javascript",
-        "examples/rate-limits"
-      ]
-    }
-  ],
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Public HTTP Endpoints", 
+        "pages": [
+          "api-reference/introduction",
+          "api-reference/endpoint/root",
+          "api-reference/endpoint/health",
+          "api-reference/endpoint/data-usage"
+        ]
+      },
+      {
+        "group": "Unified Transaction APIs",
+        "pages": [
+          "api-reference/unified/overview",
+          "api-reference/unified/authentication",
+          "api-reference/unified/transactions",
+          "api-reference/unified/websocket",
+          "api-reference/unified/exchanges"
+        ]
+      },
+      {
+        "group": "WebSocket Streaming",
+        "pages": [
+          "websocket/connection",
+          "websocket/authentication", 
+          "websocket/subscriptions",
+          "websocket/messages"
+        ]
+      },
+      {
+        "group": "WebSocket API Reference",
+        "pages": [
+          "api-reference/websocket/subscribe",
+          "api-reference/websocket/orderbook",
+          "api-reference/websocket/exchanges",
+          "api-reference/websocket/pairs"
+        ]
+      },
+      {
+        "group": "Client Examples",
+        "pages": [
+          "examples/python",
+          "examples/javascript",
+          "examples/rate-limits"
+        ]
+      }
+    ]
+  },
   "logo": {
     "light": "https://www.quantcite.com/logo/quantcite.svg",
     "dark": "./quantcite-logo-dark.png"
