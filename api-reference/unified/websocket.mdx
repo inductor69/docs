@@ -1,0 +1,562 @@
+---
+title: "WebSocket Transaction Streaming"
+description: "Real-time transaction streaming via WebSocket for Unified Transaction APIs"
+---
+
+## WebSocket Transaction Streaming
+
+The Unified Transaction APIs support real-time transaction streaming via WebSocket connections, using the same authentication pattern as HTTP APIs.
+
+### Connection URL
+
+```
+wss://data.quantcite.com/api/v1/ws
+```
+
+### Authentication Flow
+
+WebSocket connections use the same authentication pattern as HTTP APIs:
+
+1. **Connect** to WebSocket endpoint
+2. **Authenticate** with API key
+3. **Use authenticated session** for all subsequent commands
+
+## Authentication
+
+### Step 1: Connect and Authenticate
+
+<CodeGroup>
+
+```python Python
+import asyncio
+import websockets
+import json
+
+async def connect_and_authenticate():
+    uri = "wss://data.quantcite.com/api/v1/ws"
+    
+    async with websockets.connect(uri) as websocket:
+        # Send authentication message
+        auth_message = {
+            "type": "authenticate",
+            "api_key": "demo_key_123"
+        }
+        await websocket.send(json.dumps(auth_message))
+        
+        # Wait for authentication response
+        response = await websocket.recv()
+        auth_data = json.loads(response)
+        
+        if auth_data.get("type") == "welcome":
+            print(f"Authenticated successfully: {auth_data}")
+            return websocket
+        else:
+            print(f"Authentication failed: {auth_data}")
+            return None
+
+# Run the connection
+websocket = asyncio.run(connect_and_authenticate())
+```
+
+```javascript JavaScript
+const WebSocket = require('ws');
+
+const ws = new WebSocket('wss://data.quantcite.com/api/v1/ws');
+
+ws.on('open', () => {
+    console.log('Connected to WebSocket');
+    
+    // Authenticate
+    const authMessage = {
+        type: 'authenticate',
+        api_key: 'demo_key_123'
+    };
+    
+    ws.send(JSON.stringify(authMessage));
+});
+
+ws.on('message', (data) => {
+    const message = JSON.parse(data.toString());
+    
+    if (message.type === 'welcome') {
+        console.log('Authenticated successfully:', message);
+        // Now you can send other commands
+    }
+});
+```
+
+</CodeGroup>
+
+### Authentication Request
+
+```json
+{
+  "type": "authenticate",
+  "api_key": "demo_key_123"
+}
+```
+
+### Authentication Response
+
+```json
+{
+  "type": "welcome",
+  "session_id": "860a5a96-0da4-4154-9d13-a79d07121758",
+  "user_id": "cb88461f-421a-4ac8-9722-afe248a40ae6",
+  "user_tier": "premium",
+  "message": "Authenticated successfully as premium user",
+  "authentication": {
+    "api_key": "demo_key...",
+    "status": "authenticated"
+  }
+}
+```
+
+## Available Actions
+
+After authentication, you can use these WebSocket actions:
+
+### 1. Subscribe to Transactions
+
+Subscribe to real-time transaction updates for a specific exchange.
+
+#### Request
+
+```json
+{
+  "action": "subscribe_transactions",
+  "exchange": "bybit",
+  "testnet": false,
+  "transaction_types": ["deposits", "withdrawals", "trades"]
+}
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be "subscribe_transactions" |
+| `exchange` | string | Yes | Exchange name (e.g., "bybit") |
+| `testnet` | boolean | No | Use testnet environment (default: false) |
+| `transaction_types` | array | No | Array of transaction types to monitor |
+
+#### Response
+
+```json
+{
+  "type": "transaction_response",
+  "success": true,
+  "exchange": "bybit",
+  "total_transactions": 9,
+  "transactions": [
+    {
+      "transactionId": "0x4165ad97c0...",
+      "timestamp": 1693526400000,
+      "label": "Deposit",
+      "receivedCurrency": {
+        "currency": "USDT",
+        "amount": 1000.0
+      },
+      "description": {
+        "title": "Bybit Deposit",
+        "desc": "USDT deposit to account"
+      }
+    }
+  ],
+  "summary": {
+    "total_count": 9,
+    "by_type": {
+      "deposit": 8,
+      "withdrawal": 1
+    }
+  },
+  "processing_time": 2.05
+}
+```
+
+### 2. Validate Credentials
+
+Validate exchange credentials without fetching transactions.
+
+#### Request
+
+```json
+{
+  "action": "validate_credentials",
+  "exchange": "bybit",
+  "testnet": false
+}
+```
+
+#### Response (Success)
+
+```json
+{
+  "type": "validation_response",
+  "success": true,
+  "message": "Credentials are valid (using internal credentials)",
+  "exchange": "bybit",
+  "credentials_source": "internal",
+  "account_info": {
+    "account_type": "UNIFIED",
+    "status": "active"
+  }
+}
+```
+
+#### Response (Error)
+
+```json
+{
+  "type": "validation_response",
+  "success": false,
+  "message": "Invalid credentials provided",
+  "exchange": "bybit",
+  "error": "authentication_failed"
+}
+```
+
+### 3. Get Exchanges
+
+Retrieve list of supported exchanges and their capabilities.
+
+#### Request
+
+```json
+{
+  "action": "get_exchanges"
+}
+```
+
+#### Response
+
+```json
+{
+  "type": "exchanges_response",
+  "exchanges": [
+    {
+      "exchange_name": "bybit",
+      "display_name": "Bybit",
+      "supported_transaction_types": [
+        "holdings",
+        "deposits", 
+        "withdrawals",
+        "spot_orders",
+        "futures_linear",
+        "futures_inverse",
+        "ledger",
+        "leverage_token_trades",
+        "transfers"
+      ],
+      "requires_passphrase": false,
+      "testnet_available": true,
+      "documentation_url": "/docs#tag-bybit"
+    }
+  ]
+}
+```
+
+## Complete WebSocket Example
+
+<CodeGroup>
+
+```python Python
+import asyncio
+import websockets
+import json
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class UnifiedTransactionClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.uri = "wss://data.quantcite.com/api/v1/ws"
+        self.websocket = None
+        
+    async def connect(self):
+        """Connect to WebSocket and authenticate"""
+        try:
+            self.websocket = await websockets.connect(self.uri)
+            logger.info("Connected to QuantCite WebSocket")
+            
+            # Authenticate
+            auth_msg = {
+                "type": "authenticate",
+                "api_key": self.api_key
+            }
+            await self.websocket.send(json.dumps(auth_msg))
+            
+            # Wait for auth confirmation
+            auth_response = await self.websocket.recv()
+            auth_data = json.loads(auth_response)
+            
+            if auth_data.get("type") == "welcome":
+                logger.info(f"Authentication successful")
+                return True
+            else:
+                logger.error(f"Authentication failed: {auth_data}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Connection failed: {e}")
+            return False
+    
+    async def subscribe_to_transactions(self, exchange, transaction_types=None):
+        """Subscribe to transaction updates"""
+        if not self.websocket:
+            logger.error("Not connected")
+            return
+            
+        subscribe_msg = {
+            "action": "subscribe_transactions",
+            "exchange": exchange,
+            "testnet": False,
+            "transaction_types": transaction_types or ["deposits", "withdrawals", "trades"]
+        }
+        
+        await self.websocket.send(json.dumps(subscribe_msg))
+        logger.info(f"Subscribed to {exchange} transactions")
+    
+    async def validate_credentials(self, exchange):
+        """Validate exchange credentials"""
+        if not self.websocket:
+            logger.error("Not connected")
+            return
+            
+        validate_msg = {
+            "action": "validate_credentials",
+            "exchange": exchange,
+            "testnet": False
+        }
+        
+        await self.websocket.send(json.dumps(validate_msg))
+    
+    async def get_exchanges(self):
+        """Get supported exchanges"""
+        if not self.websocket:
+            logger.error("Not connected")
+            return
+            
+        exchanges_msg = {
+            "action": "get_exchanges"
+        }
+        
+        await self.websocket.send(json.dumps(exchanges_msg))
+    
+    async def listen_for_updates(self):
+        """Listen for real-time updates"""
+        if not self.websocket:
+            logger.error("Not connected")
+            return
+            
+        try:
+            async for message in self.websocket:
+                data = json.loads(message)
+                await self.handle_message(data)
+                
+        except websockets.exceptions.ConnectionClosed:
+            logger.info("Connection closed")
+        except Exception as e:
+            logger.error(f"Error listening for updates: {e}")
+    
+    async def handle_message(self, data):
+        """Handle incoming WebSocket messages"""
+        msg_type = data.get("type")
+        
+        if msg_type == "transaction_response":
+            logger.info(f"Received {data.get('total_transactions', 0)} transactions")
+            
+        elif msg_type == "validation_response":
+            if data.get("success"):
+                logger.info(f"Credentials valid for {data.get('exchange')}")
+            else:
+                logger.error(f"Credentials invalid: {data.get('message')}")
+                
+        elif msg_type == "exchanges_response":
+            exchanges = data.get("exchanges", [])
+            logger.info(f"Supported exchanges: {[ex['exchange_name'] for ex in exchanges]}")
+            
+        elif msg_type == "error":
+            logger.error(f"Error: {data.get('error')} - {data.get('message')}")
+            
+        else:
+            logger.info(f"Received {msg_type}: {data}")
+
+async def main():
+    # Initialize client
+    client = UnifiedTransactionClient("demo_key_123")
+    
+    # Connect and authenticate
+    if await client.connect():
+        # Get supported exchanges
+        await client.get_exchanges()
+        
+        # Validate credentials
+        await client.validate_credentials("bybit")
+        
+        # Subscribe to transactions
+        await client.subscribe_to_transactions("bybit", ["deposits", "withdrawals"])
+        
+        # Listen for updates
+        await client.listen_for_updates()
+
+# Run the client
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+```javascript JavaScript
+const WebSocket = require('ws');
+
+class UnifiedTransactionClient {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.uri = "wss://data.quantcite.com/api/v1/ws";
+        this.ws = null;
+    }
+    
+    async connect() {
+        return new Promise((resolve, reject) => {
+            this.ws = new WebSocket(this.uri);
+            
+            this.ws.on('open', () => {
+                console.log('Connected to QuantCite WebSocket');
+                this.authenticate();
+            });
+            
+            this.ws.on('message', (data) => {
+                const message = JSON.parse(data.toString());
+                this.handleMessage(message);
+                
+                if (message.type === 'welcome') {
+                    console.log('Authentication successful');
+                    resolve(true);
+                }
+            });
+            
+            this.ws.on('error', (error) => {
+                console.error('WebSocket error:', error);
+                reject(error);
+            });
+        });
+    }
+    
+    authenticate() {
+        const authMsg = {
+            type: 'authenticate',
+            api_key: this.apiKey
+        };
+        this.ws.send(JSON.stringify(authMsg));
+    }
+    
+    subscribeToTransactions(exchange, transactionTypes = ['deposits', 'withdrawals', 'trades']) {
+        const subscribeMsg = {
+            action: 'subscribe_transactions',
+            exchange: exchange,
+            testnet: false,
+            transaction_types: transactionTypes
+        };
+        this.ws.send(JSON.stringify(subscribeMsg));
+        console.log(`Subscribed to ${exchange} transactions`);
+    }
+    
+    validateCredentials(exchange) {
+        const validateMsg = {
+            action: 'validate_credentials',
+            exchange: exchange,
+            testnet: false
+        };
+        this.ws.send(JSON.stringify(validateMsg));
+    }
+    
+    getExchanges() {
+        const exchangesMsg = {
+            action: 'get_exchanges'
+        };
+        this.ws.send(JSON.stringify(exchangesMsg));
+    }
+    
+    handleMessage(data) {
+        switch (data.type) {
+            case 'transaction_response':
+                console.log(`Received ${data.total_transactions || 0} transactions`);
+                break;
+                
+            case 'validation_response':
+                if (data.success) {
+                    console.log(`Credentials valid for ${data.exchange}`);
+                } else {
+                    console.error(`Credentials invalid: ${data.message}`);
+                }
+                break;
+                
+            case 'exchanges_response':
+                const exchanges = data.exchanges || [];
+                console.log(`Supported exchanges: ${exchanges.map(ex => ex.exchange_name)}`);
+                break;
+                
+            case 'error':
+                console.error(`Error: ${data.error} - ${data.message}`);
+                break;
+                
+            default:
+                console.log(`Received ${data.type}:`, data);
+        }
+    }
+}
+
+// Usage
+async function main() {
+    const client = new UnifiedTransactionClient('demo_key_123');
+    
+    try {
+        await client.connect();
+        
+        // Get supported exchanges
+        client.getExchanges();
+        
+        // Validate credentials
+        client.validateCredentials('bybit');
+        
+        // Subscribe to transactions
+        client.subscribeToTransactions('bybit', ['deposits', 'withdrawals']);
+        
+    } catch (error) {
+        console.error('Failed to connect:', error);
+    }
+}
+
+main();
+```
+
+</CodeGroup>
+
+## Error Handling
+
+### Common WebSocket Errors
+
+| Error Code | Error | Description |
+|------------|-------|-------------|
+| `4001` | `authentication_failed` | Invalid API key or authentication error |
+| `4002` | `invalid_action` | Unknown or invalid action specified |
+| `4003` | `missing_parameters` | Required parameters missing from request |
+| `4004` | `exchange_error` | Error communicating with exchange |
+| `4005` | `rate_limit_exceeded` | Rate limit exceeded for WebSocket messages |
+
+### Error Response Format
+
+```json
+{
+  "type": "error",
+  "error": "invalid_action",
+  "message": "Unknown action: invalid_action_name",
+  "code": 4002,
+  "timestamp": "2025-09-18T10:30:00.000Z"
+}
+```
+
+<Tip>
+Implement proper error handling and reconnection logic in your WebSocket clients for production use.
+</Tip>

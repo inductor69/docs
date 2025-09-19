@@ -5,7 +5,7 @@ description: "Complete HTTP and WebSocket API reference for QuantCite Data Pipel
 
 ## Overview
 
-The QuantCite Data Pipeline provides real-time cryptocurrency market data through a combination of HTTP endpoints and WebSocket connections. The API is designed for **WebSocket-only** data streaming with HTTP endpoints available for health checks and usage monitoring.
+The QuantCite Data Pipeline provides real-time cryptocurrency market data through a combination of HTTP endpoints and WebSocket connections. The API offers **WebSocket-based** data streaming, **Unified Transaction APIs** for multi-exchange transaction processing, and HTTP endpoints for health checks and usage monitoring.
 
 ## Base URL
 
@@ -21,9 +21,40 @@ wss://data.quantcite.com/api/v1/ws
 
 ## Authentication
 
-All API access requires a valid API key:
-- **HTTP Endpoints**: API key as path parameter or query parameter
-- **WebSocket**: API key in authentication message (not in URL for security)
+Different authentication methods are used based on the API type:
+
+### WebSocket Authentication
+WebSocket connections use message-based authentication for enhanced security:
+
+```json
+{
+  "type": "authenticate",
+  "api_key": "your_api_key_here"
+}
+```
+
+### HTTP Authentication
+HTTP endpoints use different authentication methods:
+
+- **Public Endpoints**: No authentication required (health, exchanges list)
+- **Unified APIs**: Session-based authentication with Bearer tokens
+- **Data Usage**: API key in URL path parameter
+
+## API Categories
+
+<CardGroup cols={3}>
+  <Card title="Public HTTP Endpoints" icon="globe" href="/api-reference/endpoint/health">
+    Health checks, data usage monitoring, and general API information without authentication.
+  </Card>
+  
+  <Card title="Unified Transaction APIs" icon="database" href="/api-reference/unified/overview">
+    Standardized transaction processing across multiple exchanges with session authentication.
+  </Card>
+  
+  <Card title="WebSocket Streaming" icon="wifi" href="/api-reference/websocket/subscribe">
+    Real-time orderbook data streaming and market updates from 50+ active exchanges.
+  </Card>
+</CardGroup>
 
 ## API Features
 
@@ -32,16 +63,16 @@ All API access requires a valid API key:
     WebSocket-based orderbook updates from 52+ active exchanges across 70+ supported platforms with sub-second latency and SSL security.
   </Card>
   
+  <Card title="Transaction Processing" icon="arrows-rotate">
+    Unified API for fetching cryptocurrency transactions from multiple exchanges in standardized format.
+  </Card>
+  
   <Card title="50GB Data Limit" icon="database">
     Generous monthly data allowance with real-time usage tracking and automatic resets.
   </Card>
   
   <Card title="Multi-Exchange Support" icon="building-columns">
-    Aggregated data from major cryptocurrency exchanges worldwide.
-  </Card>
-  
-  <Card title="Rate Limiting" icon="gauge-high">
-    Tier-based limits from 600 to 10,000 requests per minute with usage monitoring.
+    Aggregated data from major cryptocurrency exchanges worldwide with unified transaction formats.
   </Card>
 </CardGroup>
 
@@ -93,8 +124,12 @@ All API access requires a valid API key:
 ## Getting Started
 
 <CardGroup cols={2}>
-  <Card title="HTTP Endpoints" icon="terminal" href="/api-reference/endpoint/health">
+  <Card title="Public HTTP Endpoints" icon="terminal" href="/api-reference/endpoint/health">
     Health checks and data usage monitoring via HTTP.
+  </Card>
+  
+  <Card title="Unified Transaction APIs" icon="database" href="/api-reference/unified/overview">
+    Multi-exchange transaction processing with session authentication.
   </Card>
   
   <Card title="WebSocket Messages" icon="message" href="/api-reference/websocket/subscribe">
@@ -103,10 +138,6 @@ All API access requires a valid API key:
   
   <Card title="Quick Start" icon="rocket" href="/quickstart">
     Get connected and receiving data in minutes.
-  </Card>
-  
-  <Card title="Client Examples" icon="code" href="/examples/python">
-    Complete Python and JavaScript implementation examples.
   </Card>
 </CardGroup>
 

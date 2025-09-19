@@ -1,0 +1,392 @@
+---
+title: "Supported Exchanges"
+description: "View all supported exchanges and their capabilities for Unified Transaction APIs"
+---
+
+## List Supported Exchanges
+
+**GET** `/api/v1/exchanges`
+
+Get list of all supported exchanges and their capabilities.
+
+### Request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://data.quantcite.com/api/v1/exchanges"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://data.quantcite.com/api/v1/exchanges")
+data = response.json()
+
+for exchange in data:
+    print(f"{exchange['display_name']}: {', '.join(exchange['supported_transaction_types'])}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/exchanges');
+const data = await response.json();
+
+data.forEach(exchange => {
+    console.log(`${exchange.display_name}: ${exchange.supported_transaction_types.join(', ')}`);
+});
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+[
+  {
+    "exchange_name": "bybit",
+    "display_name": "Bybit",
+    "supported_transaction_types": [
+      "holdings",
+      "deposits", 
+      "withdrawals",
+      "spot_orders",
+      "futures_linear",
+      "futures_inverse",
+      "ledger",
+      "leverage_token_trades",
+      "transfers"
+    ],
+    "requires_passphrase": false,
+    "testnet_available": true,
+    "documentation_url": "/docs#tag-bybit"
+  }
+]
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exchange_name` | string | Internal exchange identifier |
+| `display_name` | string | Human-readable exchange name |
+| `supported_transaction_types` | array | Available transaction types |
+| `requires_passphrase` | boolean | Whether exchange requires passphrase |
+| `testnet_available` | boolean | Whether testnet is supported |
+| `documentation_url` | string | Link to exchange-specific documentation |
+
+## Check Credential Availability
+
+**GET** `/api/v1/exchanges/credentials`
+
+Check which exchanges have internal credentials configured.
+
+### Request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://data.quantcite.com/api/v1/exchanges/credentials"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://data.quantcite.com/api/v1/exchanges/credentials")
+data = response.json()
+
+print("Exchanges with internal credentials:")
+for exchange in data["exchanges_with_internal_credentials"]:
+    print(f"- {exchange}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/exchanges/credentials');
+const data = await response.json();
+
+console.log('Exchanges with internal credentials:');
+data.exchanges_with_internal_credentials.forEach(exchange => {
+    console.log(`- ${exchange}`);
+});
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "exchanges_with_internal_credentials": ["bybit"],
+  "exchanges_requiring_user_credentials": [],
+  "details": {
+    "bybit": {
+      "has_internal_credentials": true,
+      "requires_user_credentials": false,
+      "can_use_without_api_keys": true,
+      "testnet_available": false
+    }
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exchanges_with_internal_credentials` | array | Exchanges with built-in credentials |
+| `exchanges_requiring_user_credentials` | array | Exchanges requiring user API keys |
+| `details` | object | Detailed credential information per exchange |
+
+## Validate Exchange Credentials
+
+**POST** `/api/v1/transactions/validate-credentials`
+
+Validate exchange credentials without fetching transactions. **Requires session authentication.**
+
+### Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://data.quantcite.com/api/v1/transactions/validate-credentials" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer your_session_token" \
+     -d '{
+       "exchange": "bybit",
+       "testnet": false
+     }'
+```
+
+```python Python
+import requests
+
+headers = {
+    "Authorization": f"Bearer {session_token}",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(
+    "https://data.quantcite.com/api/v1/transactions/validate-credentials",
+    headers=headers,
+    json={
+        "exchange": "bybit",
+        "testnet": False
+    }
+)
+
+data = response.json()
+print(f"Credentials valid: {data['success']}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/transactions/validate-credentials', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${sessionToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    exchange: 'bybit',
+    testnet: false
+  })
+});
+
+const data = await response.json();
+console.log(`Credentials valid: ${data.success}`);
+```
+
+</CodeGroup>
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `exchange` | string | Yes | Exchange name to validate |
+| `testnet` | boolean | No | Use testnet environment (default: false) |
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Credentials are valid (using internal credentials)",
+  "exchange": "bybit",
+  "credentials_source": "internal",
+  "account_info": {
+    "account_type": "UNIFIED",
+    "status": "active"
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "Invalid credentials provided",
+  "exchange": "bybit",
+  "error": "authentication_failed"
+}
+```
+
+## List Transaction Types
+
+**GET** `/api/v1/transactions/types`
+
+Get all supported transaction types across exchanges.
+
+### Request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://data.quantcite.com/api/v1/transactions/types"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://data.quantcite.com/api/v1/transactions/types")
+data = response.json()
+
+print("Unified transaction types:")
+for type_name, description in data["unified_types"].items():
+    print(f"- {type_name}: {description}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/transactions/types');
+const data = await response.json();
+
+console.log('Unified transaction types:');
+Object.entries(data.unified_types).forEach(([type, description]) => {
+    console.log(`- ${type}: ${description}`);
+});
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "unified_types": {
+    "deposits": "Deposit transactions (incoming funds)",
+    "withdrawals": "Withdrawal transactions (outgoing funds)",
+    "trades": "Spot trading transactions", 
+    "spot_trades": "Spot market trades",
+    "futures": "Futures/derivatives trading",
+    "derivatives": "Derivative trading transactions",
+    "transfers": "Internal transfers between accounts",
+    "holdings": "Current account balances",
+    "balances": "Account balance snapshots"
+  },
+  "exchange_specific": {
+    "bybit": [
+      "holdings", "deposits", "withdrawals", "spot_orders",
+      "futures_linear", "futures_inverse", "ledger",
+      "leverage_token_trades", "transfers"
+    ]
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `unified_types` | object | Standard transaction types with descriptions |
+| `exchange_specific` | object | Exchange-specific transaction type mappings |
+
+## Currently Supported Exchanges
+
+### Bybit
+
+<Card title="Bybit" icon="building-columns">
+  **Status**: Fully supported  
+  **Testnet**: Available  
+  **Credentials**: Internal (no user API keys required)
+</Card>
+
+#### Supported Transaction Types
+
+| Type | Description | Available |
+|------|-------------|-----------|
+| `holdings` | Current account balances | ✅ |
+| `deposits` | Deposit transactions | ✅ |
+| `withdrawals` | Withdrawal transactions | ✅ |
+| `spot_orders` | Spot trading orders | ✅ |
+| `futures_linear` | Linear futures trading | ✅ |
+| `futures_inverse` | Inverse futures trading | ✅ |
+| `ledger` | General ledger entries | ✅ |
+| `leverage_token_trades` | Leveraged token transactions | ✅ |
+| `transfers` | Internal account transfers | ✅ |
+
+#### Features
+
+- **Real-time streaming** via WebSocket
+- **Historical data** with flexible date ranges
+- **Unified data format** across all transaction types
+- **Automatic credential management** (no user setup required)
+- **Testnet support** for development and testing
+
+## Upcoming Exchanges
+
+<Note>
+We're actively working on adding support for more exchanges. Contact our support team if you need a specific exchange prioritized.
+</Note>
+
+### Planned Exchanges
+
+- **Binance** - Spot and futures trading
+- **Coinbase** - Spot trading and custody
+- **Kraken** - Spot and futures trading
+- **OKX** - Comprehensive trading support
+- **KuCoin** - Spot and futures trading
+
+### Request Exchange Support
+
+To request support for a new exchange:
+
+1. **Contact Support**: Email us at support@quantcite.com
+2. **Provide Details**: Include exchange name and required transaction types
+3. **Business Case**: Explain your use case and timeline
+4. **Priority Queue**: We'll add it to our development roadmap
+
+## Health Check
+
+**GET** `/api/v1/health`
+
+Get health status of unified transaction services.
+
+### Request
+
+```bash
+curl "https://data.quantcite.com/api/v1/health"
+```
+
+### Response
+
+```json
+{
+  "status": "healthy",
+  "unified_api": "operational",
+  "available_exchanges": ["bybit"],
+  "supported_exchanges": 1,
+  "timestamp": "2025-09-18T10:30:00.000Z"
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Overall system health status |
+| `unified_api` | string | Unified API service status |
+| `available_exchanges` | array | Currently operational exchanges |
+| `supported_exchanges` | number | Total number of supported exchanges |
+| `timestamp` | string | Health check timestamp |
+
+<Tip>
+Use the health check endpoint to verify system status before making API calls.
+</Tip>

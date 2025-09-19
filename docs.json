@@ -43,11 +43,27 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "HTTP Endpoints",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction",
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Public HTTP Endpoints",
+            "pages": [
+              "api-reference/endpoint/root",
               "api-reference/endpoint/health",
               "api-reference/endpoint/data-usage"
+            ]
+          },
+          {
+            "group": "Unified Transaction APIs",
+            "pages": [
+              "api-reference/unified/overview",
+              "api-reference/unified/authentication",
+              "api-reference/unified/transactions",
+              "api-reference/unified/websocket",
+              "api-reference/unified/exchanges"
             ]
           },
           {

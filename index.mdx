@@ -5,7 +5,7 @@ description: "Real-time cryptocurrency market data through WebSocket connections
 
 ## Overview
 
-The QuantCite Data Pipeline provides real-time cryptocurrency market data through **WebSocket and REST** connections with **SSL/TLS security**. Our system aggregates orderbook data from 52+ active exchanges across 70+ supported platforms, offering comprehensive trading pair information with built-in data usage monitoring.
+The QuantCite Data Pipeline provides real-time cryptocurrency market data and **Unified Transaction APIs** through **WebSocket and REST** connections with **SSL/TLS security**. Our system aggregates orderbook data from 52+ active exchanges across 70+ supported platforms, offering comprehensive trading pair information and standardized transaction processing with built-in data usage monitoring.
 
 <Card
   title="Quick Start"
@@ -27,8 +27,15 @@ The QuantCite Data Pipeline provides real-time cryptocurrency market data throug
     Real-time orderbook updates from multiple exchanges via WebSocket connections.
   </Card>
   <Card
-    title="50GB Monthly Limit"
+    title="Unified Transaction APIs"
     icon="database"
+    href="/api-reference/unified/overview"
+  >
+    Standardized transaction processing across multiple exchanges with session authentication.
+  </Card>
+  <Card
+    title="50GB Monthly Limit"
+    icon="chart-bar"
     href="/api-reference/endpoint/data-usage"
   >
     Generous data allowance with real-time usage monitoring and automatic resets.
@@ -40,20 +47,27 @@ The QuantCite Data Pipeline provides real-time cryptocurrency market data throug
   >
     Access aggregated data from 52+ active exchanges across 70+ supported platforms with SSL security.
   </Card>
-  <Card
-    title="Rate Limiting"
-    icon="gauge-high"
-    href="/examples/rate-limits"
-  >
-    Tier-based limits from 600 to 10,000 requests per minute.
-  </Card>
 </Columns>
 
 ## Get Started
 
-Everything you need to integrate with our real-time data pipeline.
+Everything you need to integrate with our real-time data pipeline and transaction processing APIs.
 
 <Columns cols={2}>
+  <Card
+    title="WebSocket Streaming"
+    icon="wifi"
+    href="/websocket/connection"
+  >
+    Real-time orderbook data from 50+ exchanges with SSL security.
+  </Card>
+  <Card
+    title="Unified Transactions"
+    icon="arrows-rotate"
+    href="/api-reference/unified/overview"
+  >
+    Multi-exchange transaction processing in standardized format.
+  </Card>
   <Card
     title="Python Client"
     icon="python"

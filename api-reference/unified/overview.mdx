@@ -1,0 +1,92 @@
+---
+title: "Unified Transaction APIs"
+description: "Standardized interface for fetching cryptocurrency transactions across multiple exchanges"
+---
+
+## Overview
+
+The Unified Transaction APIs provide a standardized interface for fetching and processing cryptocurrency transactions across multiple exchanges. These APIs use **session-based authentication** similar to the WebSocket API for enhanced security.
+
+### Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-exchange Support" icon="building-columns">
+    Currently supports Bybit with more exchanges coming soon
+  </Card>
+  <Card title="Unified Data Format" icon="code">
+    Standardized response format matching TypeScript interfaces
+  </Card>
+  <Card title="Session Authentication" icon="shield-check">
+    Secure token-based authentication system
+  </Card>
+  <Card title="Real-time Processing" icon="bolt">
+    WebSocket streaming for live transaction updates
+  </Card>
+</CardGroup>
+
+### Base URL
+```
+https://data.quantcite.com/api/v1
+```
+
+### Supported Transaction Types
+
+The unified API supports various transaction types across exchanges:
+
+- **Deposits** - Incoming funds to your account
+- **Withdrawals** - Outgoing funds from your account  
+- **Trades** - Spot and derivatives trading transactions
+- **Transfers** - Internal transfers between accounts
+- **Holdings** - Current account balances
+- **Futures** - Linear and inverse futures trading
+- **Leverage Tokens** - Leveraged token transactions
+
+### Data Format
+
+All transactions follow a standardized format for consistency across exchanges:
+
+```typescript
+interface Transaction {
+  transactionId: string;
+  timestamp: number;
+  label: string;
+  sentCurrency?: {
+    currency: string;
+    amount: number;
+  };
+  receivedCurrency?: {
+    currency: string;
+    amount: number;
+  };
+  fee?: {
+    currency: string;
+    amount: number;
+  };
+  sender?: {
+    name?: string;
+    public_name?: string;
+    walletId?: string;
+  };
+  description: {
+    title: string;
+    desc: string;
+  };
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api-reference/unified/authentication">
+    Learn how to authenticate and manage sessions
+  </Card>
+  <Card title="Fetch Transactions" icon="database" href="/api-reference/unified/transactions">
+    Retrieve transactions from supported exchanges
+  </Card>
+  <Card title="WebSocket Streaming" icon="wifi" href="/api-reference/unified/websocket">
+    Real-time transaction streaming via WebSocket
+  </Card>
+  <Card title="Supported Exchanges" icon="list" href="/api-reference/unified/exchanges">
+    View all supported exchanges and capabilities
+  </Card>
+</CardGroup>

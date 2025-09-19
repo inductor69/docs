@@ -1,0 +1,375 @@
+---
+title: "Fetch Transactions"
+description: "Retrieve cryptocurrency transactions from supported exchanges in unified format"
+---
+
+## Fetch Transactions
+
+**POST** `/api/v1/transactions`
+
+Fetch transactions from any supported exchange in unified format. **Requires session authentication.**
+
+### Request Format
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://data.quantcite.com/api/v1/transactions" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer your_session_token" \
+     -d '{
+       "exchange": "bybit",
+       "testnet": false,
+       "start_time": 1693526400000,
+       "end_time": 1696204800000,
+       "transaction_types": ["deposits", "withdrawals", "trades"],
+       "limit": 100
+     }'
+```
+
+```python Python
+import requests
+
+headers = {
+    "Authorization": f"Bearer {session_token}",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "exchange": "bybit",
+    "testnet": False,
+    "start_time": 1693526400000,
+    "end_time": 1696204800000,
+    "transaction_types": ["deposits", "withdrawals", "trades"],
+    "limit": 100
+}
+
+response = requests.post(
+    "https://data.quantcite.com/api/v1/transactions",
+    headers=headers,
+    json=payload
+)
+
+data = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/transactions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${sessionToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    exchange: 'bybit',
+    testnet: false,
+    start_time: 1693526400000,
+    end_time: 1696204800000,
+    transaction_types: ['deposits', 'withdrawals', 'trades'],
+    limit: 100
+  })
+});
+
+const data = await response.json();
+```
+
+</CodeGroup>
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `exchange` | string | Yes | Exchange name (e.g., "bybit") |
+| `testnet` | boolean | No | Use testnet environment (default: false) |
+| `start_time` | number | No | Start time in Unix milliseconds |
+| `end_time` | number | No | End time in Unix milliseconds |
+| `transaction_types` | array | No | Array of transaction types to fetch |
+| `limit` | number | No | Maximum number of transactions to return |
+
+### Supported Transaction Types
+
+| Type | Description |
+|------|-------------|
+| `deposits` | Deposit transactions (incoming funds) |
+| `withdrawals` | Withdrawal transactions (outgoing funds) |
+| `trades` | Spot trading transactions |
+| `spot_orders` | Spot market orders |
+| `futures_linear` | Linear futures trading |
+| `futures_inverse` | Inverse futures trading |
+| `transfers` | Internal transfers between accounts |
+| `holdings` | Current account balances |
+| `ledger` | General ledger entries |
+| `leverage_token_trades` | Leveraged token transactions |
+
+### Response Format
+
+```json
+{
+  "success": true,
+  "message": "Successfully parsed 9 transactions from 2 transaction types",
+  "exchange": "bybit",
+  "total_transactions": 9,
+  "processing_time": 2.05,
+  "transactions": [
+    {
+      "transactionId": "0x4165ad97c0...",
+      "timestamp": 1693526400000,
+      "label": "Deposit",
+      "receivedCurrency": {
+        "currency": "USDT",
+        "amount": 1000.0
+      },
+      "sender": null,
+      "fee": null,
+      "description": {
+        "title": "Bybit Deposit",
+        "desc": "USDT deposit to account"
+      }
+    },
+    {
+      "transactionId": "0x9b1e795843...",
+      "timestamp": 1693612800000,
+      "label": "Trade",
+      "sentCurrency": {
+        "currency": "USDT",
+        "amount": 500.0
+      },
+      "receivedCurrency": {
+        "currency": "BTC",
+        "amount": 0.019
+      },
+      "fee": {
+        "currency": "USDT",
+        "amount": 2.5
+      },
+      "description": {
+        "title": "Bybit Spot Trade",
+        "desc": "Buy 0.019 BTC at 26315.79 USDT"
+      }
+    }
+  ],
+  "summary": {
+    "total_count": 9,
+    "by_type": {
+      "deposit": 8,
+      "withdrawal": 1
+    },
+    "date_range": {
+      "start": 1693526400000,
+      "end": 1696204800000
+    }
+  },
+  "filters_applied": {
+    "start_time": null,
+    "end_time": null,
+    "transaction_types": ["deposits", "withdrawals"],
+    "limit": 10
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the request was successful |
+| `message` | string | Human-readable status message |
+| `exchange` | string | Exchange that was queried |
+| `total_transactions` | number | Total number of transactions returned |
+| `processing_time` | number | Time taken to process the request (seconds) |
+| `transactions` | array | Array of transaction objects |
+| `summary` | object | Summary statistics |
+| `filters_applied` | object | Applied filters for the request |
+
+## Transaction Data Formats
+
+### Deposit Transaction
+
+```typescript
+{
+  transactionId: string;
+  timestamp: number;
+  label: "Deposit" | "Airdrop" | "Staking Reward";
+  receivedCurrency: {
+    currency: string;
+    amount: number;
+  };
+  sender?: {
+    name?: string;
+    public_name?: string;
+    walletId?: string;
+  };
+  fee?: {
+    currency: string;
+    amount: number;
+  };
+  description: {
+    title: string;
+    desc: string;
+  };
+}
+```
+
+### Trade Transaction
+
+```typescript
+{
+  transactionId: string;
+  timestamp: number;
+  label: "Trade" | "Swap" | "Buy" | "Sell";
+  sentCurrency: {
+    currency: string;
+    amount: number;
+  };
+  receivedCurrency: {
+    currency: string;
+    amount: number;
+  };
+  fee?: {
+    currency: string;
+    amount: number;
+  };
+  description: {
+    title: string;
+    desc: string;
+  };
+}
+```
+
+### Withdrawal Transaction
+
+```typescript
+{
+  transactionId: string;
+  timestamp: number;
+  label: "Withdrawal";
+  sentCurrency: {
+    currency: string;
+    amount: number;
+  };
+  fee?: {
+    currency: string;
+    amount: number;
+  };
+  description: {
+    title: string;
+    desc: string;
+  };
+}
+```
+
+## Complete Example
+
+Here's a complete authentication and transaction fetching flow:
+
+<CodeGroup>
+
+```python Python
+import requests
+import json
+
+# Step 1: Authenticate
+auth_response = requests.post(
+    "https://data.quantcite.com/api/v1/authenticate",
+    json={"api_key": "demo_key_123"}
+)
+
+auth_data = auth_response.json()
+session_token = auth_data["session_token"]
+
+print(f"Authenticated as {auth_data['user_tier']} user")
+
+# Step 2: Fetch transactions
+headers = {
+    "Authorization": f"Bearer {session_token}",
+    "Content-Type": "application/json"
+}
+
+transactions_response = requests.post(
+    "https://data.quantcite.com/api/v1/transactions",
+    headers=headers,
+    json={
+        "exchange": "bybit",
+        "testnet": False,
+        "transaction_types": ["deposits", "withdrawals"],
+        "limit": 10
+    }
+)
+
+transactions_data = transactions_response.json()
+
+print(f"Retrieved {transactions_data['total_transactions']} transactions")
+for tx in transactions_data['transactions']:
+    print(f"- {tx['label']}: {tx['description']['title']}")
+```
+
+```javascript JavaScript
+// Step 1: Authenticate
+const authResponse = await fetch('https://data.quantcite.com/api/v1/authenticate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    api_key: 'demo_key_123'
+  })
+});
+
+const authData = await authResponse.json();
+const sessionToken = authData.session_token;
+
+console.log(`Authenticated as ${authData.user_tier} user`);
+
+// Step 2: Fetch transactions
+const transactionsResponse = await fetch('https://data.quantcite.com/api/v1/transactions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${sessionToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    exchange: 'bybit',
+    testnet: false,
+    transaction_types: ['deposits', 'withdrawals'],
+    limit: 10
+  })
+});
+
+const transactionsData = await transactionsResponse.json();
+
+console.log(`Retrieved ${transactionsData.total_transactions} transactions`);
+transactionsData.transactions.forEach(tx => {
+  console.log(`- ${tx.label}: ${tx.description.title}`);
+});
+```
+
+</CodeGroup>
+
+## Error Handling
+
+### Common Errors
+
+| Status Code | Error | Description |
+|-------------|-------|-------------|
+| `400` | `invalid_exchange` | Unsupported exchange specified |
+| `400` | `invalid_transaction_types` | Invalid transaction types provided |
+| `401` | `session_expired` | Session token has expired |
+| `401` | `invalid_session` | Session token is invalid |
+| `429` | `rate_limit_exceeded` | Rate limit exceeded |
+| `500` | `exchange_error` | Error communicating with exchange |
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "error": "invalid_exchange",
+  "message": "Exchange 'invalid_exchange' is not supported",
+  "supported_exchanges": ["bybit"],
+  "timestamp": "2025-09-18T10:30:00.000Z"
+}
+```
+
+<Tip>
+Always check the `success` field in responses and handle errors appropriately in your application.
+</Tip>

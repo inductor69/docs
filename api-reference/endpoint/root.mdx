@@ -1,0 +1,169 @@
+---
+title: "Root Information"
+description: "Get general API information and WebSocket endpoints"
+---
+
+## Root Information
+
+**GET** `/api/v1/`
+
+Returns general API information and WebSocket endpoints.
+
+### Request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://data.quantcite.com/api/v1/"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://data.quantcite.com/api/v1/")
+data = response.json()
+
+print(f"WebSocket endpoint: {data['websocket_endpoint']}")
+print(f"Features: {', '.join(data['features'])}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://data.quantcite.com/api/v1/');
+const data = await response.json();
+
+console.log(`WebSocket endpoint: ${data.websocket_endpoint}`);
+console.log(`Features: ${data.features.join(', ')}`);
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "message": "This API uses WebSocket-only communication for real-time data",
+  "websocket_endpoint": "/api/v1/ws?api_key=YOUR_API_KEY",
+  "authentication": {
+    "required": true,
+    "method": "API Key",
+    "parameter": "api_key (query parameter)"
+  },
+  "connection_example": "wss://data.quantcite.com/api/v1/ws?api_key=your_api_key",
+  "features": [
+    "Real-time aggregated orderbook across multiple exchanges",
+    "WebSocket-based streaming data",
+    "50GB monthly data limits per API key",
+    "Multi-exchange subscription management"
+  ]
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message` | string | Brief description of the API |
+| `websocket_endpoint` | string | WebSocket connection endpoint pattern |
+| `authentication` | object | Authentication requirements and method |
+| `connection_example` | string | Example WebSocket connection URL |
+| `features` | array | List of key API features |
+
+### Authentication Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `required` | boolean | Whether authentication is required |
+| `method` | string | Authentication method used |
+| `parameter` | string | How to provide the API key |
+
+## Usage Example
+
+This endpoint is useful for API discovery and getting connection information:
+
+<CodeGroup>
+
+```python Python
+import requests
+
+def get_api_info():
+    """Get QuantCite API information"""
+    response = requests.get("https://data.quantcite.com/api/v1/")
+    
+    if response.status_code == 200:
+        data = response.json()
+        
+        print("QuantCite API Information:")
+        print(f"- {data['message']}")
+        print(f"- WebSocket: {data['websocket_endpoint']}")
+        print(f"- Authentication: {data['authentication']['method']}")
+        
+        print("\nFeatures:")
+        for feature in data['features']:
+            print(f"  • {feature}")
+            
+        return data
+    else:
+        print(f"Error: {response.status_code}")
+        return None
+
+# Get API information
+api_info = get_api_info()
+```
+
+```javascript JavaScript
+async function getApiInfo() {
+    try {
+        const response = await fetch('https://data.quantcite.com/api/v1/');
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            console.log('QuantCite API Information:');
+            console.log(`- ${data.message}`);
+            console.log(`- WebSocket: ${data.websocket_endpoint}`);
+            console.log(`- Authentication: ${data.authentication.method}`);
+            
+            console.log('\nFeatures:');
+            data.features.forEach(feature => {
+                console.log(`  • ${feature}`);
+            });
+            
+            return data;
+        } else {
+            console.error(`Error: ${response.status}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Request failed:', error);
+        return null;
+    }
+}
+
+// Get API information
+getApiInfo();
+```
+
+</CodeGroup>
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success - API information returned |
+| `500` | Internal Server Error |
+
+### Error Response
+
+```json
+{
+  "error": "internal_server_error",
+  "message": "Unable to retrieve API information",
+  "timestamp": "2025-09-18T10:30:00.000Z"
+}
+```
+
+<Note>
+This endpoint provides general information about the API and is typically used for service discovery and initial connection setup.
+</Note>
