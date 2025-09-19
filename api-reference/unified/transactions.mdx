@@ -9,7 +9,7 @@ description: "Retrieve cryptocurrency transactions from supported exchanges in u
 
 Fetch transactions from any supported exchange in unified format. **Requires session authentication.**
 
-### Request Format
+### Request Format (Using Internal Credentials)
 
 <CodeGroup>
 
@@ -75,6 +75,47 @@ const data = await response.json();
 
 </CodeGroup>
 
+### Request Format (Using Your Own API Credentials)
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://data.quantcite.com/api/v1/transactions" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer your_session_token" \
+     -d '{
+       "exchange": "bybit",
+       "testnet": false,
+       "start_time": 1693526400000,
+       "end_time": 1696204800000,
+       "transaction_types": ["deposits", "withdrawals", "trades"],
+       "limit": 100,
+       "credentials": {
+         "api_key": "YOUR_BYBIT_API_KEY",
+         "secret": "YOUR_BYBIT_SECRET"
+       }
+     }'
+```
+
+```bash OKX with Passphrase
+curl -X POST "https://data.quantcite.com/api/v1/transactions" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer your_session_token" \
+     -d '{
+       "exchange": "okx",
+       "testnet": false,
+       "transaction_types": ["deposits", "withdrawals", "spot_trades"],
+       "limit": 100,
+       "credentials": {
+         "api_key": "YOUR_OKX_API_KEY",
+         "secret": "YOUR_OKX_SECRET",
+         "passphrase": "YOUR_OKX_PASSPHRASE"
+       }
+     }'
+```
+
+</CodeGroup>
+
 ### Request Parameters
 
 | Parameter | Type | Required | Description |
@@ -85,6 +126,17 @@ const data = await response.json();
 | `end_time` | number | No | End time in Unix milliseconds |
 | `transaction_types` | array | No | Array of transaction types to fetch |
 | `limit` | number | No | Maximum number of transactions to return |
+| `credentials` | object | No | Your exchange API credentials (if not using internal credentials) |
+
+### Credentials Object (Optional)
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `api_key` | string | Yes* | Your exchange API key |
+| `secret` | string | Yes* | Your exchange API secret |
+| `passphrase` | string | No | Required for OKX, Coinbase, Kraken |
+
+*Required when using your own credentials instead of internal credentials
 
 ### Supported Transaction Types
 
@@ -257,6 +309,64 @@ const data = await response.json();
   };
 }
 ```
+
+## Exchange Credential Requirements
+
+When using your own API credentials, different exchanges have different requirements:
+
+### Standard Exchanges (API Key + Secret)
+- **Bybit**: `api_key`, `secret`
+- **Binance**: `api_key`, `secret`
+- **KuCoin**: `api_key`, `secret`
+- **Gate.io**: `api_key`, `secret`
+- **Huobi/HTX**: `api_key`, `secret`
+- **Bitfinex**: `api_key`, `secret`
+
+### Exchanges Requiring Passphrase
+- **OKX**: `api_key`, `secret`, `passphrase`
+- **Coinbase**: `api_key`, `secret`, `passphrase`
+- **Kraken**: `api_key`, `secret`
+
+### Example Credential Objects
+
+#### Bybit Credentials
+```json
+{
+  "credentials": {
+    "api_key": "YOUR_BYBIT_API_KEY",
+    "secret": "YOUR_BYBIT_SECRET"
+  }
+}
+```
+
+#### OKX Credentials (with passphrase)
+```json
+{
+  "credentials": {
+    "api_key": "YOUR_OKX_API_KEY", 
+    "secret": "YOUR_OKX_SECRET",
+    "passphrase": "YOUR_OKX_PASSPHRASE"
+  }
+}
+```
+
+#### Coinbase Credentials (with passphrase)
+```json
+{
+  "credentials": {
+    "api_key": "YOUR_COINBASE_API_KEY",
+    "secret": "YOUR_COINBASE_SECRET", 
+    "passphrase": "YOUR_COINBASE_PASSPHRASE"
+  }
+}
+```
+
+### Security Notes
+- **Never share your API credentials** with anyone
+- **Use read-only API keys** when possible for transaction fetching
+- **Enable IP whitelisting** on your exchange accounts
+- **Regularly rotate your API keys** for security
+- **Store credentials securely** and never commit them to version control
 
 ## Complete Example
 

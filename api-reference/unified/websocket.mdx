@@ -131,6 +131,35 @@ Subscribe to real-time transaction updates for a specific exchange.
 }
 ```
 
+#### 2. Subscribe to Transactions (after authentication) - Your Own Credentials
+```json
+{
+  "action": "subscribe_transactions",
+  "exchange": "bybit",
+  "testnet": false,
+  "transaction_types": ["deposits", "withdrawals", "trades"],
+  "credentials": {
+    "api_key": "YOUR_BYBIT_API_KEY",
+    "secret": "YOUR_BYBIT_SECRET"
+  }
+}
+```
+
+#### Example: OKX WebSocket with Passphrase
+```json
+{
+  "action": "subscribe_transactions",
+  "exchange": "okx",
+  "testnet": false,
+  "transaction_types": ["deposits", "withdrawals", "spot_trades"],
+  "credentials": {
+    "api_key": "YOUR_OKX_API_KEY",
+    "secret": "YOUR_OKX_SECRET",
+    "passphrase": "YOUR_OKX_PASSPHRASE"
+  }
+}
+```
+
 #### Parameters
 
 | Parameter | Type | Required | Description |
@@ -178,13 +207,42 @@ Subscribe to real-time transaction updates for a specific exchange.
 
 Validate exchange credentials without fetching transactions.
 
-#### Request
+#### Request (Internal Credentials)
 
 ```json
 {
   "action": "validate_credentials",
   "exchange": "bybit",
   "testnet": false
+}
+```
+
+#### Request (Your Own Credentials)
+
+```json
+{
+  "action": "validate_credentials",
+  "exchange": "bybit",
+  "testnet": false,
+  "credentials": {
+    "api_key": "YOUR_BYBIT_API_KEY",
+    "secret": "YOUR_BYBIT_SECRET"
+  }
+}
+```
+
+#### Request (OKX with Passphrase)
+
+```json
+{
+  "action": "validate_credentials",
+  "exchange": "okx",
+  "testnet": false,
+  "credentials": {
+    "api_key": "YOUR_OKX_API_KEY",
+    "secret": "YOUR_OKX_SECRET",
+    "passphrase": "YOUR_OKX_PASSPHRASE"
+  }
 }
 ```
 

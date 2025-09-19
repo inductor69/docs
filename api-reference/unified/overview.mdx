@@ -16,6 +16,9 @@ The Unified Transaction APIs provide a standardized interface for fetching and p
   <Card title="Unified Data Format" icon="code">
     Standardized response format matching TypeScript interfaces
   </Card>
+  <Card title="Flexible Credentials" icon="key">
+    Use internal credentials or your own exchange API keys
+  </Card>
   <Card title="Session Authentication" icon="shield-check">
     Secure token-based authentication system
   </Card>
@@ -28,6 +31,22 @@ The Unified Transaction APIs provide a standardized interface for fetching and p
 ```
 https://data.quantcite.com/api/v1
 ```
+
+### Credential Options
+
+The Unified Transaction APIs support two credential modes:
+
+#### Internal Credentials (Default)
+- **No setup required** - Use QuantCite's internal exchange credentials
+- **Immediate access** - Start fetching transactions right away
+- **Limited exchanges** - Currently available for Bybit only
+- **No API key management** - We handle all exchange authentication
+
+#### Your Own Credentials
+- **Full control** - Use your own exchange API keys
+- **All exchanges** - Access any supported exchange with your credentials
+- **Enhanced security** - Your credentials never leave your control
+- **Custom permissions** - Configure your exchange API keys as needed
 
 ### Supported Transaction Types
 
